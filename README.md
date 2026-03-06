@@ -1,6 +1,6 @@
-# VTuber Twitch Chat Overlay
+# Twitch Chat Overlay
 
-A browser-based overlay for Twitch chat, designed for VTubers. Displays chat messages and alerts in a unified timeline feed based on reference designs in `png/`.
+A browser-based overlay for Twitch chat. Displays chat messages and alerts in a unified timeline feed.
 
 ## Features
 

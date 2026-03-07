@@ -28,9 +28,13 @@ export function parseMessageWithEmotes(text: string, emotes: Record<string, stri
 
   for (const [emoteId, positions] of Object.entries(emotes)) {
     for (const position of positions) {
-      const [startString, endString] = position.split("-");
-      const start = Number(startString);
-      const end = Number(endString);
+      const matched = /^(\d+)-(\d+)$/.exec(position);
+      if (!matched) {
+        continue;
+      }
+
+      const start = Number(matched[1]);
+      const end = Number(matched[2]);
       if (Number.isNaN(start) || Number.isNaN(end) || start < 0 || end < start) {
         continue;
       }

@@ -30,6 +30,27 @@ describe("overlay-utils", () => {
     ]);
   });
 
+  it("sorts emotes and ignores invalid ranges", () => {
+    const segments = parseMessageWithEmotes("Kappa hi Keepo", {
+      "1902": ["9-13"],
+      "25": ["0-4", "bad", "4-2"],
+    });
+
+    expect(segments).toEqual([
+      { type: "emote", emoteId: "25", alt: "Kappa" },
+      { type: "text", value: " hi " },
+      { type: "emote", emoteId: "1902", alt: "Keepo" },
+    ]);
+  });
+
+  it("falls back to text when emote ranges are all invalid", () => {
+    expect(
+      parseMessageWithEmotes("hello", {
+        "25": ["oops", "8-2", "-1-2"],
+      }),
+    ).toEqual([{ type: "text", value: "hello" }]);
+  });
+
   it("detects emote-only messages", () => {
     expect(
       isEmoteOnlyMessage([

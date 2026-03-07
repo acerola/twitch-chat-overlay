@@ -74,6 +74,16 @@ describe("App debug menu", () => {
     expect(screen.queryByRole("button", { name: "デバッグを開く" })).not.toBeInTheDocument();
   });
 
+  it("shows setup hint when channel and debug mode are both disabled", () => {
+    vi.stubEnv("VITE_CHANNEL_NAME", "");
+    vi.stubEnv("VITE_DEBUG_MODE", "0");
+    window.history.pushState({}, "", "/overlay");
+    render(<App />);
+
+    expect(screen.getByText("チャンネル名が未設定、または形式が不正です。")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "デバッグを開く" })).not.toBeInTheDocument();
+  });
+
   it("shows debug controls without channel when debug mode is on", () => {
     vi.unstubAllEnvs();
     vi.stubEnv("VITE_DEBUG_MODE", "1");

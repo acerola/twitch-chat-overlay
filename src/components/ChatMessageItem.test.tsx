@@ -70,6 +70,8 @@ describe("ChatMessageItem", () => {
 
     expect(messageText).not.toHaveClass("message-text-emote-only");
     expect(emote).toBeInTheDocument();
-    expect(emote).not.toHaveClass("emote-large");
+    expect(emote).not.toHaveClass("emote-single");
+    expect(emote).not.toHaveClass("emote-multi");
+    expect(messageText).toHaveTextContent("hello");
   });
 });

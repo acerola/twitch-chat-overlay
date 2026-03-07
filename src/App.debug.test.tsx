@@ -21,10 +21,11 @@ describe("App debug menu", () => {
   beforeEach(() => {
     vi.unstubAllEnvs();
     vi.stubEnv("VITE_CHANNEL_NAME", "test_channel");
+    vi.stubEnv("VITE_DEBUG_MODE", "1");
     mockClient.on.mockClear();
     mockClient.connect.mockClear();
     mockClient.disconnect.mockClear();
-    window.history.pushState({}, "", "/overlay?debug=1");
+    window.history.pushState({}, "", "/overlay");
   });
 
   afterEach(() => {
@@ -66,9 +67,9 @@ describe("App debug menu", () => {
     expect(screen.queryAllByTestId("alert-item")).toHaveLength(0);
   });
 
-  it("hides debug controls when debug=0 is set", () => {
-    vi.stubEnv("VITE_DEBUG_MODE", "1");
-    window.history.pushState({}, "", "/overlay?test=1&debug=0");
+  it("hides debug controls when VITE_DEBUG_MODE=0", () => {
+    vi.stubEnv("VITE_DEBUG_MODE", "0");
+    window.history.pushState({}, "", "/overlay?test=1");
     render(<App />);
 
     expect(screen.queryByRole("button", { name: "デバッグを開く" })).not.toBeInTheDocument();

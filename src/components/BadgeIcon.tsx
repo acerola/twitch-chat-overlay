@@ -31,5 +31,11 @@ const ICON_BY_BADGE: Record<BadgeKind, IconType> = {
 
 export function BadgeIcon({ badge }: { badge: BadgeKind }) {
   const Icon = ICON_BY_BADGE[badge] ?? FaShieldAlt;
-  return <Icon className="role-icon" aria-hidden="true" focusable="false" />;
+  return (
+    <Icon
+      className="h-[13px] w-[13px] text-white/[0.95] drop-shadow-[0_1px_1px_rgba(0,0,0,0.24)]"
+      aria-hidden="true"
+      focusable="false"
+    />
+  );
 }

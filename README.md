@@ -124,20 +124,19 @@ Tests cover:
 - Overflow trimming with variable-height rows
 - Feed generation and deletion utilities
 
-## Vercel Deployment
+## GitHub Pages Deployment
 
-This is a frontend-only project — no server or database required.
+This is a frontend-only project — no server or database required. Deployed automatically via GitHub Actions.
 
 ### Steps
 
-1. Connect your repository to Vercel
-2. Framework Preset: select `Vite` (auto-detected)
-3. Set environment variables:
-   - `VITE_CHANNEL_NAME`
-   - `VITE_DEBUG_MODE` (optional)
-4. Deploy
+1. Go to **Settings → Pages → Source** → select **GitHub Actions**
+2. Set repository variables in **Settings → Secrets and variables → Actions → Variables**:
+   - `VITE_CHANNEL_NAME` — default Twitch channel name
+   - `VITE_DEBUG_MODE` — `0` for production, `1` to enable debug UI
+3. Go to **Actions → Deploy to GitHub Pages → Run workflow** to trigger a deploy manually
 
-SPA rewrite is configured in `vercel.json` (handles routes like `/overlay`).
+Live URL: `https://<username>.github.io/twitch-chat-overlay/`
 
 ## OBS Integration
 

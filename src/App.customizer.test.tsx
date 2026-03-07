@@ -1,7 +1,11 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
-import { DEFAULT_OVERLAY_STYLE_CONFIG, encodeOverlayStyleConfig } from "./lib/overlay-customization";
+import {
+  DEFAULT_OVERLAY_STYLE_CONFIG,
+  encodeOverlayStyleConfig,
+  OVERLAY_PREVIEW_STYLE_SYNC_TYPE,
+} from "./lib/overlay-customization";
 
 describe("App customizer", () => {
   beforeEach(() => {
@@ -37,20 +41,35 @@ describe("App customizer", () => {
     expect(screen.getByLabelText("メインカラー")).toHaveValue("#224466");
   });
 
-  it("updates the iframe preview from draft settings without leaking customize=1", async () => {
+  it("updates the iframe preview from draft settings without reloading the frame", async () => {
     window.history.pushState({}, "", "/?customize=1");
     render(<App />);
 
     const frame = screen.getByTitle("オーバーレイプレビュー");
     const initialSrc = frame.getAttribute("src") ?? "";
+    const postMessage = vi.fn();
+    Object.defineProperty(frame, "contentWindow", {
+      configurable: true,
+      value: { postMessage },
+    });
+
     expect(initialSrc).toContain("test=1");
     expect(initialSrc).not.toContain("customize=1");
 
     fireEvent.click(screen.getByRole("button", { name: "Kaisei Decol 和風デコ文字" }));
 
     await waitFor(() => {
-      expect(frame.getAttribute("src")).not.toBe(initialSrc);
+      expect(postMessage).toHaveBeenCalled();
     });
+
+    expect(frame.getAttribute("src")).toBe(initialSrc);
+    expect(postMessage).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        type: OVERLAY_PREVIEW_STYLE_SYNC_TYPE,
+        config: expect.objectContaining({ f: "kaisei" }),
+      }),
+      window.location.origin,
+    );
   });
 
   it("generates an OBS-ready URL without channel and debug params", () => {

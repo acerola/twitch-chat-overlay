@@ -10,6 +10,8 @@ export interface OverlayStyleConfig {
   a: AvatarPresetId;
 }
 
+export const OVERLAY_PREVIEW_STYLE_SYNC_TYPE = "overlay-preview-style-sync";
+
 export interface FontPresetOption {
   id: FontPresetId;
   label: string;
@@ -283,6 +285,24 @@ export function createOverlayStyleVars(config: OverlayStyleConfig): Record<`--${
     "--avatar-accent-4": adjustLightness(accentHex, 0.22, "lighten"),
     "--avatar-accent-5": adjustLightness(accentHex, 0.12, "lighten"),
   };
+}
+
+export function createOverlayPreviewStyleSyncMessage(config: OverlayStyleConfig): {
+  type: typeof OVERLAY_PREVIEW_STYLE_SYNC_TYPE;
+  config: OverlayStyleConfig;
+} {
+  return {
+    type: OVERLAY_PREVIEW_STYLE_SYNC_TYPE,
+    config: resolveOverlayStyleConfig(config),
+  };
+}
+
+export function readOverlayPreviewStyleSyncMessage(value: unknown): OverlayStyleConfig | null {
+  if (!isRecord(value) || value.type !== OVERLAY_PREVIEW_STYLE_SYNC_TYPE || !isRecord(value.config)) {
+    return null;
+  }
+
+  return resolveOverlayStyleConfig(value.config as Partial<OverlayStyleConfig>);
 }
 
 export function buildOverlayUrl(appBaseUrl: string, config: OverlayStyleConfig): string {

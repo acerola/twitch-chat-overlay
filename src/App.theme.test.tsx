@@ -1,7 +1,10 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
-import { encodeOverlayStyleConfig } from "./lib/overlay-customization";
+import {
+  createOverlayPreviewStyleSyncMessage,
+  encodeOverlayStyleConfig,
+} from "./lib/overlay-customization";
 
 describe("App themed overlay", () => {
   beforeEach(() => {
@@ -44,5 +47,28 @@ describe("App themed overlay", () => {
 
     const avatarMark = container.querySelector(".avatar-mark");
     expect(avatarMark).toHaveAttribute("data-avatar-preset", "star");
+  });
+
+  it("applies live preview theme sync messages in test mode", async () => {
+    window.history.pushState({}, "", "/?test=1");
+    render(<App />);
+
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        origin: window.location.origin,
+        data: createOverlayPreviewStyleSyncMessage({
+          v: 1,
+          f: "kaisei",
+          c: "225588",
+          a: "crescent",
+        }),
+      }),
+    );
+
+    await waitFor(() => {
+      const overlayRoot = screen.getByTestId("overlay-root");
+      expect(overlayRoot.style.getPropertyValue("--overlay-font-family")).toContain("Kaisei Decol");
+      expect(overlayRoot.style.getPropertyValue("--flower-color")).toBe("#225588");
+    });
   });
 });

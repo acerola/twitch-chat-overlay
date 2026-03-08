@@ -4,7 +4,6 @@ import { App } from "./App";
 import {
   DEFAULT_OVERLAY_STYLE_CONFIG,
   encodeOverlayStyleConfig,
-  OVERLAY_PREVIEW_STYLE_SYNC_TYPE,
 } from "./lib/overlay-customization";
 
 describe("App customizer", () => {
@@ -24,7 +23,8 @@ describe("App customizer", () => {
     render(<App />);
 
     expect(screen.getByTestId("customizer-page")).toBeInTheDocument();
-    expect(screen.queryByTestId("overlay-root")).not.toBeInTheDocument();
+    expect(screen.getByTestId("customizer-preview")).toBeInTheDocument();
+    expect(screen.getByTestId("overlay-root")).toBeInTheDocument();
   });
 
   it("prefills the form from cfg query params", () => {
@@ -33,53 +33,36 @@ describe("App customizer", () => {
       f: "kaisei",
       c: "224466",
       a: "star",
+      nt: "faf7ff",
     });
 
     window.history.pushState({}, "", `/?customize=1&cfg=${packed}`);
     render(<App />);
 
     expect(screen.getByLabelText("メインカラー")).toHaveValue("#224466");
+    expect(screen.getByLabelText("メインカラーコード")).toHaveValue("#224466");
+    expect(screen.getByLabelText("ネーム文字コード")).toHaveValue("#faf7ff");
   });
 
-  it("updates the iframe preview from draft settings without reloading the frame", async () => {
+  it("updates the embedded preview from draft settings", async () => {
     window.history.pushState({}, "", "/?customize=1");
     render(<App />);
 
-    const frame = screen.getByTitle("オーバーレイプレビュー");
-    const initialSrc = frame.getAttribute("src") ?? "";
-    const postMessage = vi.fn();
-    Object.defineProperty(frame, "contentWindow", {
-      configurable: true,
-      value: { postMessage },
-    });
-
-    expect(initialSrc).toContain("test=1");
-    expect(initialSrc).not.toContain("customize=1");
+    const overlayRoot = screen.getByTestId("overlay-root");
 
     fireEvent.click(screen.getByRole("button", { name: "Kaisei Decol 和風デコ文字" }));
 
     await waitFor(() => {
-      expect(postMessage).toHaveBeenCalled();
+      expect(overlayRoot.style.getPropertyValue("--overlay-font-family")).toContain("Kaisei Decol");
     });
-
-    expect(frame.getAttribute("src")).toBe(initialSrc);
-    expect(postMessage).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        type: OVERLAY_PREVIEW_STYLE_SYNC_TYPE,
-        config: expect.objectContaining({ f: "kaisei" }),
-      }),
-      window.location.origin,
-    );
   });
 
-  it("generates an OBS-ready URL without channel and debug params", () => {
+  it("keeps the OBS URL in sync without channel and debug params", () => {
     window.history.pushState({}, "", "/?customize=1");
     render(<App />);
 
-    const generateButton = screen.getByRole("button", { name: "URL を生成" });
     const output = screen.getByLabelText("生成URL") as HTMLTextAreaElement;
     fireEvent.click(screen.getByRole("button", { name: "Star 星モチーフ" }));
-    fireEvent.click(generateButton);
 
     const generatedUrl = output.value;
     expect(generatedUrl).toContain("cfg=");
@@ -87,6 +70,37 @@ describe("App customizer", () => {
     expect(generatedUrl).not.toContain("debug=");
     expect(generatedUrl).not.toContain("test=");
     expect(generatedUrl).not.toContain("customize=");
+  });
+
+  it("accepts manual hex color input and syncs the embedded preview state", async () => {
+    window.history.pushState({}, "", "/?customize=1");
+    render(<App />);
+
+    fireEvent.change(screen.getByLabelText("メインカラーコード"), {
+      target: { value: "#225588" },
+    });
+
+    expect(screen.getByLabelText("メインカラー")).toHaveValue("#225588");
+
+    const overlayRoot = screen.getByTestId("overlay-root");
+    await waitFor(() => {
+      expect(overlayRoot.style.getPropertyValue("--flower-color")).toBe("#225588");
+    });
+  });
+
+  it("accepts individual overlay color overrides", async () => {
+    window.history.pushState({}, "", "/?customize=1");
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "詳細カラーを開く" }));
+    fireEvent.change(screen.getByLabelText("ネーム文字コード"), {
+      target: { value: "#221122" },
+    });
+
+    const overlayRoot = screen.getByTestId("overlay-root");
+    await waitFor(() => {
+      expect(overlayRoot.style.getPropertyValue("--name-color")).toBe("#221122");
+    });
   });
 
   it("resets the theme draft back to the default blossom theme", () => {

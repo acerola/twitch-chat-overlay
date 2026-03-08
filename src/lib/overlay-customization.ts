@@ -1,16 +1,22 @@
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "lz-string";
 
 export type FontPresetId = "kiwi" | "zen" | "mplus" | "kaisei";
-export type AvatarPresetId = "blossom" | "crescent" | "gem" | "star";
+export type AvatarPresetId = "blossom" | "crescent" | "gem" | "star" | "vampire";
+export type OverlayColorOverrideKey = "fc" | "nb" | "nt" | "mc" | "ac" | "ar" | "as";
 
 export interface OverlayStyleConfig {
   v: 1;
   f: FontPresetId;
   c: string;
   a: AvatarPresetId;
+  fc?: string;
+  nb?: string;
+  nt?: string;
+  mc?: string;
+  ac?: string;
+  ar?: string;
+  as?: string;
 }
-
-export const OVERLAY_PREVIEW_STYLE_SYNC_TYPE = "overlay-preview-style-sync";
 
 export interface FontPresetOption {
   id: FontPresetId;
@@ -64,6 +70,7 @@ export const AVATAR_PRESET_OPTIONS: readonly AvatarPresetOption[] = [
   { id: "crescent", label: "Crescent", description: "月と小花のバッジ" },
   { id: "gem", label: "Gem", description: "宝石モチーフ" },
   { id: "star", label: "Star", description: "星モチーフ" },
+  { id: "vampire", label: "Vampire Wings", description: "吸血鬼の翼モチーフ" },
 ];
 
 const FONT_PRESET_IDS = new Set<FontPresetId>(FONT_PRESET_OPTIONS.map((option) => option.id));
@@ -71,8 +78,10 @@ const AVATAR_PRESET_IDS = new Set<AvatarPresetId>(AVATAR_PRESET_OPTIONS.map((opt
 const DEFAULT_FONT_FAMILY = '"Kiwi Maru", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif';
 const DEFAULT_OVERLAY_THEME_VARS = {
   "--flower-color": "#ffa9b5",
+  "--message-color": "#fffefe",
   "--name-background-color": "#ffc9d4",
   "--name-color": "#7b563c",
+  "--alert-text-color": "#fffefe",
   "--role-pill-background-color": "rgba(255, 201, 212, 0.2)",
   "--role-pill-border-color": "rgba(255, 255, 255, 0.86)",
   "--avatar-ring-color": "#ffc9d4",
@@ -229,6 +238,13 @@ export function resolveOverlayStyleConfig(input: Partial<OverlayStyleConfig> | n
     f: isFontPresetId(input?.f) ? input.f : DEFAULT_OVERLAY_STYLE_CONFIG.f,
     c: normalizeAccentColor(input?.c) ?? DEFAULT_OVERLAY_STYLE_CONFIG.c,
     a: isAvatarPresetId(input?.a) ? input.a : DEFAULT_OVERLAY_STYLE_CONFIG.a,
+    fc: normalizeAccentColor(input?.fc) ?? undefined,
+    nb: normalizeAccentColor(input?.nb) ?? undefined,
+    nt: normalizeAccentColor(input?.nt) ?? undefined,
+    mc: normalizeAccentColor(input?.mc) ?? undefined,
+    ac: normalizeAccentColor(input?.ac) ?? undefined,
+    ar: normalizeAccentColor(input?.ar) ?? undefined,
+    as: normalizeAccentColor(input?.as) ?? undefined,
   };
 }
 
@@ -266,56 +282,40 @@ export function createOverlayStyleVars(config: OverlayStyleConfig): Record<`--${
     ...DEFAULT_OVERLAY_THEME_VARS,
   } satisfies Record<`--${string}`, string>;
 
-  if (accentHex === DEFAULT_OVERLAY_STYLE_CONFIG.c) {
-    return baseVars;
-  }
+  const derivedVars =
+    accentHex === DEFAULT_OVERLAY_STYLE_CONFIG.c
+      ? baseVars
+      : {
+          ...baseVars,
+          "--flower-color": formatAccentColor(accentHex),
+          "--name-background-color": adjustLightness(accentHex, 0.32, "lighten"),
+          "--name-color": adjustLightness(accentHex, 0.48, "darken"),
+          "--role-pill-background-color": withAlpha(accentHex, 0.18),
+          "--role-pill-border-color": withAlpha(accentHex, 0.54),
+          "--avatar-ring-color": adjustLightness(accentHex, 0.36, "lighten"),
+          "--avatar-stem-color": adjustLightness(accentHex, 0.48, "darken"),
+          "--avatar-accent-1": adjustLightness(accentHex, 0.56, "lighten"),
+          "--avatar-accent-2": adjustLightness(accentHex, 0.46, "lighten"),
+          "--avatar-accent-3": adjustLightness(accentHex, 0.34, "lighten"),
+          "--avatar-accent-4": adjustLightness(accentHex, 0.22, "lighten"),
+          "--avatar-accent-5": adjustLightness(accentHex, 0.12, "lighten"),
+        };
 
   return {
-    ...baseVars,
-    "--flower-color": formatAccentColor(accentHex),
-    "--name-background-color": adjustLightness(accentHex, 0.32, "lighten"),
-    "--name-color": adjustLightness(accentHex, 0.48, "darken"),
-    "--role-pill-background-color": withAlpha(accentHex, 0.18),
-    "--role-pill-border-color": withAlpha(accentHex, 0.54),
-    "--avatar-ring-color": adjustLightness(accentHex, 0.36, "lighten"),
-    "--avatar-stem-color": adjustLightness(accentHex, 0.48, "darken"),
-    "--avatar-accent-1": adjustLightness(accentHex, 0.56, "lighten"),
-    "--avatar-accent-2": adjustLightness(accentHex, 0.46, "lighten"),
-    "--avatar-accent-3": adjustLightness(accentHex, 0.34, "lighten"),
-    "--avatar-accent-4": adjustLightness(accentHex, 0.22, "lighten"),
-    "--avatar-accent-5": adjustLightness(accentHex, 0.12, "lighten"),
+    ...derivedVars,
+    ...(resolved.fc ? { "--flower-color": formatAccentColor(resolved.fc) } : {}),
+    ...(resolved.nb ? { "--name-background-color": formatAccentColor(resolved.nb) } : {}),
+    ...(resolved.nt ? { "--name-color": formatAccentColor(resolved.nt) } : {}),
+    ...(resolved.mc ? { "--message-color": formatAccentColor(resolved.mc) } : {}),
+    ...(resolved.ac ? { "--alert-text-color": formatAccentColor(resolved.ac) } : {}),
+    ...(resolved.ar ? { "--avatar-ring-color": formatAccentColor(resolved.ar) } : {}),
+    ...(resolved.as ? { "--avatar-stem-color": formatAccentColor(resolved.as) } : {}),
   };
-}
-
-export function createOverlayPreviewStyleSyncMessage(config: OverlayStyleConfig): {
-  type: typeof OVERLAY_PREVIEW_STYLE_SYNC_TYPE;
-  config: OverlayStyleConfig;
-} {
-  return {
-    type: OVERLAY_PREVIEW_STYLE_SYNC_TYPE,
-    config: resolveOverlayStyleConfig(config),
-  };
-}
-
-export function readOverlayPreviewStyleSyncMessage(value: unknown): OverlayStyleConfig | null {
-  if (!isRecord(value) || value.type !== OVERLAY_PREVIEW_STYLE_SYNC_TYPE || !isRecord(value.config)) {
-    return null;
-  }
-
-  return resolveOverlayStyleConfig(value.config as Partial<OverlayStyleConfig>);
 }
 
 export function buildOverlayUrl(appBaseUrl: string, config: OverlayStyleConfig): string {
   const url = new URL(appBaseUrl);
   url.search = "";
-  url.searchParams.set("cfg", encodeOverlayStyleConfig(config));
-  return url.toString();
-}
-
-export function buildOverlayPreviewUrl(appBaseUrl: string, config: OverlayStyleConfig): string {
-  const url = new URL(appBaseUrl);
-  url.search = "";
-  url.searchParams.set("test", "1");
   url.searchParams.set("cfg", encodeOverlayStyleConfig(config));
   return url.toString();
 }

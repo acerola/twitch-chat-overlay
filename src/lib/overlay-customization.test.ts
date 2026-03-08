@@ -1,7 +1,7 @@
 import { compressToEncodedURIComponent } from "lz-string";
 import { describe, expect, it } from "vitest";
 import {
-  buildOverlayPreviewUrl,
+  buildCustomizerUrl,
   buildOverlayUrl,
   createOverlayStyleVars,
   decodeOverlayStyleConfig,
@@ -17,14 +17,18 @@ describe("overlay customization", () => {
       v: 1,
       f: "kaisei",
       c: "123456",
-      a: "star",
+      a: "vampire",
+      nt: "faf7ff",
+      ar: "eeddff",
     });
 
     expect(decodeOverlayStyleConfig(packed)).toEqual({
       v: 1,
       f: "kaisei",
       c: "123456",
-      a: "star",
+      a: "vampire",
+      nt: "faf7ff",
+      ar: "eeddff",
     });
   });
 
@@ -43,7 +47,7 @@ describe("overlay customization", () => {
     expect(resolveOverlayStyleConfig({ c: "not-a-color" })).toEqual(DEFAULT_OVERLAY_STYLE_CONFIG);
   });
 
-  it("builds overlay and preview URLs with packed cfg", () => {
+  it("builds overlay and customizer URLs with the expected params", () => {
     const config = {
       v: 1,
       f: "zen",
@@ -52,16 +56,16 @@ describe("overlay customization", () => {
     } as const;
 
     const overlayUrl = new URL(buildOverlayUrl("https://example.com/twitch-chat-overlay/", config));
-    const previewUrl = new URL(buildOverlayPreviewUrl("https://example.com/twitch-chat-overlay/", config));
+    const customizerUrl = new URL(buildCustomizerUrl("https://example.com/twitch-chat-overlay/"));
 
     expect(overlayUrl.pathname).toBe("/twitch-chat-overlay/");
     expect(overlayUrl.searchParams.has("channel")).toBe(false);
     expect(overlayUrl.searchParams.get("cfg")).toBeTruthy();
     expect(overlayUrl.searchParams.has("test")).toBe(false);
 
-    expect(previewUrl.searchParams.get("test")).toBe("1");
-    expect(previewUrl.searchParams.has("channel")).toBe(false);
-    expect(previewUrl.searchParams.get("cfg")).toBeTruthy();
+    expect(customizerUrl.searchParams.get("customize")).toBe("1");
+    expect(customizerUrl.searchParams.has("channel")).toBe(false);
+    expect(customizerUrl.searchParams.has("cfg")).toBe(false);
   });
 
   it("creates derived theme variables from the main accent color", () => {
@@ -76,6 +80,23 @@ describe("overlay customization", () => {
     expect(styleVars["--flower-color"]).toBe("#225588");
     expect(styleVars["--name-background-color"]).toMatch(/^#/);
     expect(styleVars["--avatar-accent-1"]).toMatch(/^#/);
+  });
+
+  it("applies explicit color overrides on top of the derived palette", () => {
+    const styleVars = createOverlayStyleVars({
+      v: 1,
+      f: "kiwi",
+      c: "225588",
+      a: "blossom",
+      mc: "f8f4ff",
+      nt: "24111f",
+      ar: "eed0ff",
+    });
+
+    expect(styleVars["--message-color"]).toBe("#f8f4ff");
+    expect(styleVars["--name-color"]).toBe("#24111f");
+    expect(styleVars["--avatar-ring-color"]).toBe("#eed0ff");
+    expect(styleVars["--flower-color"]).toBe("#225588");
   });
 
   it("preserves the original main-branch palette for the default config", () => {

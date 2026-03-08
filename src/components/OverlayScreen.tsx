@@ -55,6 +55,7 @@ interface OverlayScreenProps {
   debugMode: boolean;
   testMode: boolean;
   styleConfig: OverlayStyleConfig;
+  embeddedPreview?: boolean;
 }
 
 const EMPTY_BLANK_SPACE_STATS: BlankSpaceStats = {
@@ -91,7 +92,14 @@ function pickRandom<T>(values: readonly T[]): T {
   return values[Math.floor(Math.random() * values.length)] as T;
 }
 
-export function OverlayScreen({ channel, customizeHref, debugMode, testMode, styleConfig }: OverlayScreenProps) {
+export function OverlayScreen({
+  channel,
+  customizeHref,
+  debugMode,
+  testMode,
+  styleConfig,
+  embeddedPreview = false,
+}: OverlayScreenProps) {
   const { messages, alerts, addAlert, addDebugMessage, clearAllOverlayData, trimFeedEntries } = useOverlayData({
     channel,
     testMode,
@@ -337,10 +345,20 @@ export function OverlayScreen({ channel, customizeHref, debugMode, testMode, sty
   const stackStyle = {
     "--feed-row-gap": `${rowGapPx}px`,
   } as CSSProperties;
+  const overlayRootClassName = embeddedPreview
+    ? "overlay-root relative flex h-full w-full flex-col justify-end gap-[8px] bg-transparent px-2 pb-2 pt-2 text-[var(--message-color)]"
+    : testMode
+      ? "overlay-root relative flex min-h-0 w-full flex-col justify-end gap-[6px] bg-transparent px-3 pb-2 pt-2 text-[var(--message-color)]"
+      : "overlay-root relative flex h-screen w-full flex-col justify-between gap-[10px] bg-transparent px-3 pb-5 pt-[18px] text-[var(--message-color)]";
+  const messageStackClassName = embeddedPreview
+    ? "message-stack mt-auto flex h-[82%] max-h-[500px] w-full max-w-[440px] flex-col justify-end gap-[var(--feed-row-gap)] overflow-hidden rounded-[16px] border border-[var(--plate-border)] bg-[linear-gradient(140deg,rgba(14,10,10,0.42)_0%,rgba(14,10,10,0.26)_100%)] px-2 py-[8px] backdrop-blur-[4px] backdrop-saturate-[1.04]"
+    : testMode
+      ? "message-stack mt-auto flex h-[clamp(250px,44vh,400px)] w-[min(58vw,420px)] flex-col justify-end gap-[var(--feed-row-gap)] overflow-hidden rounded-[16px] border border-[var(--plate-border)] bg-[linear-gradient(140deg,rgba(14,10,10,0.42)_0%,rgba(14,10,10,0.26)_100%)] px-2 py-[8px] backdrop-blur-[4px] backdrop-saturate-[1.04]"
+      : "message-stack mt-auto flex h-[clamp(420px,72vh,700px)] w-[min(58vw,420px)] flex-col justify-end gap-[var(--feed-row-gap)] overflow-hidden rounded-[16px] border border-[var(--plate-border)] bg-[linear-gradient(140deg,rgba(14,10,10,0.42)_0%,rgba(14,10,10,0.26)_100%)] px-2 py-[10px] backdrop-blur-[4px] backdrop-saturate-[1.04]";
 
   return (
     <div
-      className="overlay-root relative flex h-screen w-full flex-col justify-between gap-[10px] bg-transparent px-3 pb-5 pt-[18px] text-[var(--message-color)]"
+      className={overlayRootClassName}
       style={themedOverlayStyle}
       data-testid="overlay-root"
     >
@@ -382,7 +400,7 @@ export function OverlayScreen({ channel, customizeHref, debugMode, testMode, sty
 
       <div
         ref={messageStackRef}
-        className="message-stack mt-auto flex h-[clamp(420px,72vh,700px)] w-[min(58vw,420px)] flex-col justify-end gap-[var(--feed-row-gap)] overflow-hidden rounded-[16px] border border-[var(--plate-border)] bg-[linear-gradient(140deg,rgba(14,10,10,0.42)_0%,rgba(14,10,10,0.26)_100%)] px-2 py-[10px] backdrop-blur-[4px] backdrop-saturate-[1.04]"
+        className={messageStackClassName}
         style={stackStyle}
         aria-live="polite"
       >

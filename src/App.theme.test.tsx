@@ -1,10 +1,7 @@
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
-import {
-  createOverlayPreviewStyleSyncMessage,
-  encodeOverlayStyleConfig,
-} from "./lib/overlay-customization";
+import { encodeOverlayStyleConfig } from "./lib/overlay-customization";
 
 describe("App themed overlay", () => {
   beforeEach(() => {
@@ -24,6 +21,8 @@ describe("App themed overlay", () => {
       f: "kaisei",
       c: "225588",
       a: "crescent",
+      mc: "f8f4ff",
+      nt: "24111f",
     });
 
     window.history.pushState({}, "", `/?test=1&cfg=${packed}`);
@@ -32,6 +31,8 @@ describe("App themed overlay", () => {
     const overlayRoot = screen.getByTestId("overlay-root");
     expect(overlayRoot.style.getPropertyValue("--overlay-font-family")).toContain("Kaisei Decol");
     expect(overlayRoot.style.getPropertyValue("--flower-color")).toBe("#225588");
+    expect(overlayRoot.style.getPropertyValue("--message-color")).toBe("#f8f4ff");
+    expect(overlayRoot.style.getPropertyValue("--name-color")).toBe("#24111f");
   });
 
   it("renders the selected avatar preset inside message rows", () => {
@@ -39,36 +40,24 @@ describe("App themed overlay", () => {
       v: 1,
       f: "zen",
       c: "446688",
-      a: "star",
+      a: "vampire",
     });
 
     window.history.pushState({}, "", `/?test=1&cfg=${packed}`);
     const { container } = render(<App />);
 
     const avatarMark = container.querySelector(".avatar-mark");
-    expect(avatarMark).toHaveAttribute("data-avatar-preset", "star");
+    expect(avatarMark).toHaveAttribute("data-avatar-preset", "vampire");
   });
 
-  it("applies live preview theme sync messages in test mode", async () => {
+  it("uses the standalone preview path for test mode", async () => {
     window.history.pushState({}, "", "/?test=1");
     render(<App />);
 
-    window.dispatchEvent(
-      new MessageEvent("message", {
-        origin: window.location.origin,
-        data: createOverlayPreviewStyleSyncMessage({
-          v: 1,
-          f: "kaisei",
-          c: "225588",
-          a: "crescent",
-        }),
-      }),
-    );
-
     await waitFor(() => {
       const overlayRoot = screen.getByTestId("overlay-root");
-      expect(overlayRoot.style.getPropertyValue("--overlay-font-family")).toContain("Kaisei Decol");
-      expect(overlayRoot.style.getPropertyValue("--flower-color")).toBe("#225588");
+      expect(overlayRoot).toBeInTheDocument();
+      expect(screen.queryByTestId("customizer-page")).not.toBeInTheDocument();
     });
   });
 });

@@ -1,3 +1,4 @@
+import { useId } from "react";
 import type { AvatarPresetId } from "../lib/overlay-customization";
 
 interface AvatarBadgeIconProps {
@@ -179,6 +180,99 @@ function StarBadge() {
   );
 }
 
+interface VampireWingIds {
+  membraneGradientId: string;
+  membraneHighlightId: string;
+}
+
+function VampireWingsBadge({
+  membraneGradientId,
+  membraneHighlightId,
+}: VampireWingIds) {
+  return (
+    <>
+      <g data-avatar-ornament="vampire-wings">
+        <path
+          fill="#120d16"
+          stroke="#fff8fd"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+          d="M32 34.4L28.9 31.1L25.3 27.8L21.2 24.7L16.8 22.1L12.8 21.1L9.3 21.7L7.8 23.6L8.7 25.4L6.3 26.8L4.8 29L5.4 31L8.2 31.4L6.9 33.4L6.8 35.6L8.6 37L11.4 37.1L10.6 39.8L11.7 42L14.2 42.7L17.6 41.8L21.4 39.8L25.6 37.4L29.4 35.4Z"
+        />
+        <path
+          fill={`url(#${membraneGradientId})`}
+          d="M29.3 34.2L26.6 31.4L23.6 28.7L20.1 26.1L16.7 24.2L13.6 23.5L11.5 23.8L10.7 24.8L12.1 26.9L14.2 29.5L11.1 31.2L9.8 33L10.2 34.4L12.8 34.9L14.7 34.5L13.8 38.2L14.3 39.4L16 39.7L18.7 38.8L22 37L25.6 35Z"
+        />
+        <path
+          fill="none"
+          stroke="#221224"
+          strokeWidth="1.35"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M29.1 34L24.8 31.3M24.8 31.3L20.5 28.2M20.5 28.2L15.6 25.2M24.8 31.3L22.6 36.8M20.5 28.2L18.2 35.8M15.6 25.2L13.6 34.5"
+        />
+        <path
+          fill="none"
+          stroke={`url(#${membraneHighlightId})`}
+          strokeWidth="0.9"
+          strokeLinecap="round"
+          d="M27.3 34.4c-2.7 0.6-6.3 2.2-9.6 4.4M24.6 31.5c-3.4 0.3-7.4 1.5-10.6 3.5M20.1 28.2c-2.7 0.3-5.3 1-7.6 2.1"
+        />
+        <path
+          fill="#120d16"
+          stroke="#fff8fd"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+          transform="translate(64 0) scale(-1 1)"
+          d="M32 34.4L28.9 31.1L25.3 27.8L21.2 24.7L16.8 22.1L12.8 21.1L9.3 21.7L7.8 23.6L8.7 25.4L6.3 26.8L4.8 29L5.4 31L8.2 31.4L6.9 33.4L6.8 35.6L8.6 37L11.4 37.1L10.6 39.8L11.7 42L14.2 42.7L17.6 41.8L21.4 39.8L25.6 37.4L29.4 35.4Z"
+        />
+        <path
+          fill={`url(#${membraneGradientId})`}
+          transform="translate(64 0) scale(-1 1)"
+          d="M29.3 34.2L26.6 31.4L23.6 28.7L20.1 26.1L16.7 24.2L13.6 23.5L11.5 23.8L10.7 24.8L12.1 26.9L14.2 29.5L11.1 31.2L9.8 33L10.2 34.4L12.8 34.9L14.7 34.5L13.8 38.2L14.3 39.4L16 39.7L18.7 38.8L22 37L25.6 35Z"
+        />
+        <path
+          fill="none"
+          stroke="#221224"
+          strokeWidth="1.35"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          transform="translate(64 0) scale(-1 1)"
+          d="M29.1 34L24.8 31.3M24.8 31.3L20.5 28.2M20.5 28.2L15.6 25.2M24.8 31.3L22.6 36.8M20.5 28.2L18.2 35.8M15.6 25.2L13.6 34.5"
+        />
+        <path
+          fill="none"
+          stroke={`url(#${membraneHighlightId})`}
+          strokeWidth="0.9"
+          strokeLinecap="round"
+          transform="translate(64 0) scale(-1 1)"
+          d="M27.3 34.4c-2.7 0.6-6.3 2.2-9.6 4.4M24.6 31.5c-3.4 0.3-7.4 1.5-10.6 3.5M20.1 28.2c-2.7 0.3-5.3 1-7.6 2.1"
+        />
+      </g>
+      <path
+        data-avatar-core="vampire-crest"
+        fill="#120d16"
+        stroke="#fff7fc"
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+        d="M32 22.5l1.4 1-0.2 2.5-1.2 3.2-1.2-3.2-0.2-2.5 1.4-1z"
+      />
+      <path
+        fill="#ff4a63"
+        d="M32 23.4l0.5 0.3v0.8l-0.5 1.3-0.5-1.3v-0.8z"
+      />
+      <path
+        fill="#fff8fc"
+        d="M31.4 20.2l0.6-1.8 0.6 1.8 1.4 0.5-1.4 0.4-0.6 1.7-0.6-1.7-1.4-0.4z"
+      />
+      <g fill="#ffffff" opacity="0.92">
+        <circle cx="14.8" cy="22.8" r="0.7" />
+        <circle cx="49.2" cy="22.8" r="0.7" />
+      </g>
+    </>
+  );
+}
+
 function renderPreset(preset: AvatarPresetId) {
   switch (preset) {
     case "crescent":
@@ -194,10 +288,28 @@ function renderPreset(preset: AvatarPresetId) {
 }
 
 export function AvatarBadgeIcon({ className, preset }: AvatarBadgeIconProps) {
+  const membraneGradientId = useId().replace(/:/g, "");
+  const membraneHighlightId = useId().replace(/:/g, "");
+
   return (
     <svg className={className} viewBox="0 0 64 64" aria-hidden="true" data-avatar-preset={preset}>
+      {preset === "vampire" ? (
+        <defs>
+          <linearGradient id={membraneGradientId} x1="10" y1="24" x2="28" y2="39" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stopColor="#5d1022" />
+            <stop offset="0.46" stopColor="#ff334e" />
+            <stop offset="1" stopColor="#6d0f22" />
+          </linearGradient>
+          <linearGradient id={membraneHighlightId} x1="14" y1="28" x2="27" y2="37" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stopColor="#ffffff" stopOpacity="0.72" />
+            <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+      ) : null}
       <circle cx="32" cy="32" r="27.6" fill="none" stroke="var(--avatar-ring-color)" strokeWidth="5.1" />
-      {renderPreset(preset)}
+      {preset === "vampire"
+        ? <VampireWingsBadge membraneGradientId={membraneGradientId} membraneHighlightId={membraneHighlightId} />
+        : renderPreset(preset)}
     </svg>
   );
 }

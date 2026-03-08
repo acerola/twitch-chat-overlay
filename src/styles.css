@@ -46,6 +46,41 @@
     --connector-flower-size: 9.6px;
     --connector-flower-bottom: 3px;
     --connector-dot-bottom-bottom: -10px;
+    --customizer-page-glow-1: rgba(255, 169, 181, 0.22);
+    --customizer-page-glow-2: rgba(255, 201, 212, 0.18);
+    --customizer-page-bg-start: #120c0d;
+    --customizer-page-bg-mid: #1f1416;
+    --customizer-page-bg-end: #130d0e;
+    --customizer-panel-top: rgba(255, 255, 255, 0.08);
+    --customizer-panel-bottom: rgba(255, 255, 255, 0.03);
+    --customizer-stage-top: rgba(255, 255, 255, 0.08);
+    --customizer-stage-bottom: rgba(255, 255, 255, 0.02);
+    --customizer-stage-start: rgba(15, 11, 12, 0.96);
+    --customizer-stage-end: rgba(40, 29, 31, 0.94);
+    --customizer-surface: rgba(255, 255, 255, 0.04);
+    --customizer-surface-muted: rgba(0, 0, 0, 0.1);
+    --customizer-surface-strong: rgba(255, 255, 255, 0.08);
+    --customizer-surface-hover: rgba(255, 255, 255, 0.12);
+    --customizer-border: rgba(255, 255, 255, 0.1);
+    --customizer-border-strong: rgba(255, 255, 255, 0.18);
+    --customizer-border-soft: rgba(255, 255, 255, 0.12);
+    --customizer-border-accent: rgba(255, 214, 226, 0.58);
+    --customizer-border-accent-soft: rgba(255, 214, 226, 0.42);
+    --customizer-focus: rgba(255, 214, 226, 0.52);
+    --customizer-focus-soft: rgba(255, 214, 226, 0.32);
+    --customizer-text-body: #fff8fb;
+    --customizer-text-heading: #fff6f8;
+    --customizer-text: #fff7fa;
+    --customizer-text-muted: rgba(255, 245, 248, 0.72);
+    --customizer-text-preview: rgba(255, 241, 246, 0.84);
+    --customizer-text-accent: #ffd4e0;
+    --customizer-primary: rgba(255, 169, 181, 0.94);
+    --customizer-warning-bg: rgba(255, 214, 120, 0.08);
+    --customizer-warning-border: rgba(255, 214, 120, 0.32);
+    --customizer-warning-text: #fff5dc;
+    --customizer-warning-text-soft: rgba(255, 245, 220, 0.9);
+    --customizer-swatch-ring: rgba(255, 255, 255, 0.08);
+    --customizer-swatch-ring-soft: rgba(255, 255, 255, 0.05);
   }
 
   * {

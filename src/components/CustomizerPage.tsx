@@ -30,43 +30,43 @@ interface CustomizerPageProps {
 
 const pageStyle = {
   background: `
-    radial-gradient(circle at top left, rgba(255, 169, 181, 0.22), transparent 36%),
-    radial-gradient(circle at bottom right, rgba(255, 201, 212, 0.18), transparent 32%),
-    linear-gradient(160deg, #120c0d 0%, #1f1416 48%, #130d0e 100%)
+    radial-gradient(circle at top left, var(--customizer-page-glow-1), transparent 36%),
+    radial-gradient(circle at bottom right, var(--customizer-page-glow-2), transparent 32%),
+    linear-gradient(160deg, var(--customizer-page-bg-start) 0%, var(--customizer-page-bg-mid) 48%, var(--customizer-page-bg-end) 100%)
   `,
 } satisfies CSSProperties;
 
 const panelStyle = {
   background:
-    "linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03))",
+    "linear-gradient(180deg, var(--customizer-panel-top), var(--customizer-panel-bottom))",
   backdropFilter: "blur(18px)",
   boxShadow: "0 18px 52px rgba(0, 0, 0, 0.28)",
 } satisfies CSSProperties;
 
 const stageStyle = {
   background: `
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
-    linear-gradient(135deg, rgba(15, 11, 12, 0.96), rgba(40, 29, 31, 0.94))
+    linear-gradient(180deg, var(--customizer-stage-top), var(--customizer-stage-bottom)),
+    linear-gradient(135deg, var(--customizer-stage-start), var(--customizer-stage-end))
   `,
 } satisfies CSSProperties;
 
 const sectionClassName =
-  "flex flex-col gap-3 rounded-[18px] border border-white/10 bg-black/[0.1] p-4";
+  "flex flex-col gap-3 rounded-[18px] border border-[var(--customizer-border)] bg-[var(--customizer-surface-muted)] p-4";
 const sectionHeadClassName = "flex flex-col gap-1";
 const helperTextClassName =
-  "m-0 text-[13px] leading-[1.55] text-[rgba(255,245,248,0.72)]";
+  "m-0 text-[13px] leading-[1.55] text-[var(--customizer-text-muted)]";
 const choiceBaseClassName =
-  "cursor-pointer rounded-[18px] border border-white/12 bg-white/[0.04] text-left text-inherit transition-[border-color,transform,background] duration-150 ease-in-out hover:-translate-y-px hover:border-[rgba(255,214,226,0.58)] hover:bg-white/[0.08] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgba(255,214,226,0.52)]";
+  "cursor-pointer rounded-[18px] border border-[var(--customizer-border-soft)] bg-[var(--customizer-surface)] text-left text-inherit transition-[border-color,transform,background] duration-150 ease-in-out hover:-translate-y-px hover:border-[var(--customizer-border-accent)] hover:bg-[var(--customizer-surface-strong)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--customizer-focus)]";
 const selectedChoiceClassName =
-  "border-[rgba(255,214,226,0.58)] bg-white/[0.08] -translate-y-px";
+  "border-[var(--customizer-border-accent)] bg-[var(--customizer-surface-strong)] -translate-y-px";
 const secondaryButtonClassName =
-  "cursor-pointer rounded-full border border-white/[0.18] bg-white/[0.08] px-4 py-[10px] text-[13px] font-medium text-[#fff7fa] transition-[background,border-color,transform] duration-150 ease-in-out hover:-translate-y-px hover:border-[rgba(255,214,226,0.54)] hover:bg-white/[0.12] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgba(255,214,226,0.48)] disabled:cursor-not-allowed disabled:opacity-48";
+  "cursor-pointer rounded-full border border-[var(--customizer-border-strong)] bg-[var(--customizer-surface-strong)] px-4 py-[10px] text-[13px] font-medium text-[var(--customizer-text)] transition-[background,border-color,transform] duration-150 ease-in-out hover:-translate-y-px hover:border-[var(--customizer-border-accent)] hover:bg-[var(--customizer-surface-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--customizer-focus)] disabled:cursor-not-allowed disabled:opacity-48";
 const primaryButtonClassName =
-  "cursor-pointer rounded-full border border-[rgba(255,214,226,0.42)] bg-[rgba(255,169,181,0.94)] px-4 py-[10px] text-[13px] font-medium text-[#fff7fa] transition-[transform,filter] duration-150 ease-in-out hover:-translate-y-px hover:brightness-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgba(255,214,226,0.52)] disabled:cursor-not-allowed disabled:opacity-48";
+  "cursor-pointer rounded-full border border-[var(--customizer-border-accent-soft)] bg-[var(--customizer-primary)] px-4 py-[10px] text-[13px] font-medium text-[var(--customizer-text)] transition-[transform,filter] duration-150 ease-in-out hover:-translate-y-px hover:brightness-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--customizer-focus)] disabled:cursor-not-allowed disabled:opacity-48";
 const inputClassName =
-  "w-full rounded-2xl border border-white/[0.16] bg-white/[0.06] px-[14px] py-[13px] text-[#fffdfd] outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgba(255,214,226,0.32)]";
+  "w-full rounded-2xl border border-[var(--customizer-border-strong)] bg-[var(--customizer-surface)] px-[14px] py-[13px] text-[var(--customizer-text-body)] outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--customizer-focus-soft)]";
 const statusChipClassName =
-  "inline-flex items-center rounded-full border border-white/10 bg-white/[0.06] px-3 py-[6px] text-[12px] font-medium text-[#fff7fa]";
+  "inline-flex items-center rounded-full border border-[var(--customizer-border)] bg-[var(--customizer-surface)] px-3 py-[6px] text-[12px] font-medium text-[var(--customizer-text)]";
 
 const CUSTOMIZER_DESKTOP_MEDIA_QUERY = "(min-width: 721px)";
 const CUSTOMIZER_PREVIEW_TOP_OFFSET = 24;
@@ -320,24 +320,24 @@ export function CustomizerPage({
 
   return (
     <div
-      className="min-h-screen overflow-x-hidden p-[14px] pb-8 text-[#fff8fb] min-[721px]:p-6 min-[721px]:pb-10"
+      className="min-h-screen overflow-x-hidden p-[14px] pb-8 text-[var(--customizer-text-body)] min-[721px]:p-5 min-[721px]:pb-10 min-[1180px]:p-6"
       style={pageStyle}
       data-testid="customizer-page"
     >
       <div
         ref={layoutRef}
-        className="mx-auto grid w-[min(1380px,100%)] grid-cols-1 items-start gap-[22px] min-[721px]:grid-cols-[minmax(340px,430px)_minmax(0,1fr)]"
+        className="mx-auto grid w-[min(1380px,100%)] grid-cols-1 items-start gap-5 min-[721px]:gap-6 min-[960px]:grid-cols-[minmax(320px,390px)_minmax(0,1fr)] min-[1180px]:grid-cols-[minmax(340px,430px)_minmax(0,1fr)]"
       >
         <main
-          className="flex flex-col gap-5 rounded-[20px] border border-white/12 p-4 min-[721px]:rounded-[24px] min-[721px]:p-6"
+          className="flex flex-col gap-5 rounded-[20px] border border-[var(--customizer-border-soft)] p-4 min-[721px]:rounded-[24px] min-[721px]:p-5 min-[1180px]:p-6"
           style={panelStyle}
         >
-          <div className="flex flex-col gap-4 rounded-[20px] border border-white/10 bg-white/[0.04] p-4">
+          <div className="flex flex-col gap-4 rounded-[20px] border border-[var(--customizer-border)] bg-[var(--customizer-surface)] p-4">
             <div>
-              <p className="mb-[6px] text-xs font-medium uppercase tracking-[0.16em] text-[#ffd4e0]">
-                Overlay Customizer
+              <p className="mb-[6px] text-xs font-medium uppercase tracking-[0.16em] text-[var(--customizer-text-accent)]">
+                Overlay Studio
               </p>
-              <h1 className="m-0 text-[clamp(30px,4vw,42px)] leading-[1.1] text-[#fff6f8]">
+              <h1 className="m-0 text-[clamp(30px,4vw,42px)] leading-[1.1] text-[var(--customizer-text-heading)]">
                 オーバーレイを整える
               </h1>
               <p className={helperTextClassName}>
@@ -348,13 +348,13 @@ export function CustomizerPage({
             </div>
             <div className="flex flex-wrap gap-[10px]">
               <span className={statusChipClassName}>
-                Font: {selectedFontOption?.label ?? draftConfig.f}
+                フォント: {selectedFontOption?.label ?? draftConfig.f}
               </span>
               <span className={statusChipClassName}>
-                Icon: {selectedAvatarOption?.label ?? draftConfig.a}
+                アイコン: {selectedAvatarOption?.label ?? draftConfig.a}
               </span>
               <span className={statusChipClassName}>
-                Accent: {colorCodeInputs.c}
+                アクセント: {colorCodeInputs.c}
               </span>
               <span className={statusChipClassName}>
                 詳細カラー {activeOverrideCount} 件
@@ -364,7 +364,7 @@ export function CustomizerPage({
 
           <div className={sectionClassName}>
             <div className={sectionHeadClassName}>
-              <h2 className="m-0 text-[17px] font-medium text-[#fff6f8]">
+              <h2 className="m-0 text-[17px] font-medium text-[var(--customizer-text-heading)]">
                 フォント
               </h2>
               <p className={helperTextClassName}>
@@ -372,7 +372,7 @@ export function CustomizerPage({
               </p>
             </div>
             <div
-              className="grid grid-cols-1 gap-[10px] min-[721px]:grid-cols-2"
+              className="grid grid-cols-1 gap-[10px] min-[1180px]:grid-cols-2"
               role="group"
               aria-label="フォント選択"
             >
@@ -386,11 +386,11 @@ export function CustomizerPage({
                     setDraftConfig((current) => ({ ...current, f: option.id }))
                   }
                 >
-                  <span className="text-sm font-medium text-[#fff7fa]">
+                  <span className="text-sm font-medium text-[var(--customizer-text)]">
                     {option.label}
                   </span>
                   <span
-                    className="text-lg leading-[1.35] text-[rgba(255,241,246,0.84)]"
+                    className="text-lg leading-[1.35] text-[var(--customizer-text-preview)]"
                     style={{ fontFamily: option.fontFamily }}
                   >
                     {option.previewText}
@@ -402,7 +402,7 @@ export function CustomizerPage({
 
           <div className={sectionClassName}>
             <div className={sectionHeadClassName}>
-              <h2 className="m-0 text-[17px] font-medium text-[#fff6f8]">
+              <h2 className="m-0 text-[17px] font-medium text-[var(--customizer-text-heading)]">
                 メインカラー
               </h2>
               <p className={helperTextClassName}>
@@ -424,9 +424,9 @@ export function CustomizerPage({
                   onColorFieldChange("c", nextValue);
                 }}
               />
-              <div className="inline-flex items-center gap-[10px] rounded-2xl bg-white/[0.06] px-[14px] py-3 text-[#fff7fa]">
+              <div className="inline-flex items-center gap-[10px] rounded-2xl bg-[var(--customizer-surface)] px-[14px] py-3 text-[var(--customizer-text)]">
                 <span
-                  className="h-[18px] w-[18px] rounded-full border border-white/[0.36] shadow-[0_0_0_3px_rgba(255,255,255,0.08)]"
+                  className="h-[18px] w-[18px] rounded-full border border-white/[0.36] shadow-[0_0_0_3px_var(--customizer-swatch-ring)]"
                   style={{ backgroundColor: colorCodeInputs.c }}
                 />
                 <code className="text-[13px]">{colorCodeInputs.c}</code>
@@ -460,7 +460,7 @@ export function CustomizerPage({
 
           <div className={sectionClassName}>
             <div className={sectionHeadClassName}>
-              <h2 className="m-0 text-[17px] font-medium text-[#fff6f8]">
+              <h2 className="m-0 text-[17px] font-medium text-[var(--customizer-text-heading)]">
                 プロフィールアイコン
               </h2>
               <p className={helperTextClassName}>
@@ -468,7 +468,7 @@ export function CustomizerPage({
               </p>
             </div>
             <div
-              className="grid grid-cols-1 gap-[10px] min-[721px]:grid-cols-2"
+              className="grid grid-cols-1 gap-[10px] min-[1180px]:grid-cols-2"
               role="group"
               aria-label="プロフィールアイコン選択"
             >
@@ -494,7 +494,7 @@ export function CustomizerPage({
                   >
                     <AvatarBadgeIcon className="h-14 w-14" preset={option.id} />
                   </span>
-                  <span className="text-sm font-medium text-[#fff7fa]">
+                  <span className="text-sm font-medium text-[var(--customizer-text)]">
                     {option.label}
                   </span>
                   <span className={helperTextClassName}>
@@ -506,9 +506,9 @@ export function CustomizerPage({
           </div>
 
           <div className={sectionClassName}>
-            <div className="flex flex-col gap-3 min-[721px]:flex-row min-[721px]:items-start min-[721px]:justify-between">
+            <div className="flex flex-col gap-3 min-[1180px]:flex-row min-[1180px]:items-start min-[1180px]:justify-between">
               <div className={sectionHeadClassName}>
-                <h2 className="m-0 text-[17px] font-medium text-[#fff6f8]">
+                <h2 className="m-0 text-[17px] font-medium text-[var(--customizer-text-heading)]">
                   詳細カラー
                 </h2>
                 <p className={helperTextClassName}>
@@ -542,16 +542,16 @@ export function CustomizerPage({
             {showAdvancedColors ? (
               <div
                 id="advanced-color-panel"
-                className="grid grid-cols-1 gap-[10px] min-[721px]:grid-cols-2"
+                className="grid grid-cols-1 gap-[10px] min-[1180px]:grid-cols-2"
               >
                 {ADVANCED_COLOR_OPTIONS.map((option) => (
                   <div
                     key={option.key}
-                    className="flex flex-col gap-3 rounded-[18px] border border-white/12 bg-white/[0.04] p-[14px]"
+                    className="flex flex-col gap-3 rounded-[18px] border border-[var(--customizer-border-soft)] bg-[var(--customizer-surface)] p-[14px]"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex flex-col gap-1">
-                        <h3 className="m-0 text-sm font-medium text-[#fff7fa]">
+                        <h3 className="m-0 text-sm font-medium text-[var(--customizer-text)]">
                           {option.label}
                         </h3>
                         <p className={helperTextClassName}>
@@ -559,7 +559,7 @@ export function CustomizerPage({
                         </p>
                       </div>
                       <span
-                        className="h-8 w-8 shrink-0 rounded-full border border-white/16 shadow-[0_0_0_3px_rgba(255,255,255,0.05)]"
+                        className="h-8 w-8 shrink-0 rounded-full border border-white/16 shadow-[0_0_0_3px_var(--customizer-swatch-ring-soft)]"
                         style={{ backgroundColor: colorCodeInputs[option.key] }}
                       />
                     </div>
@@ -610,7 +610,7 @@ export function CustomizerPage({
                 ))}
               </div>
             ) : (
-              <div className="rounded-[16px] border border-dashed border-white/12 bg-white/[0.03] p-4">
+              <div className="rounded-[16px] border border-dashed border-[var(--customizer-border-soft)] bg-[var(--customizer-surface)] p-4">
                 <p className={helperTextClassName}>
                   まずはフォント、メインカラー、アイコンで雰囲気を決めて、必要になったらここを開いて微調整するのがおすすめです。
                 </p>
@@ -619,9 +619,9 @@ export function CustomizerPage({
           </div>
 
           <div className={sectionClassName}>
-            <div className="flex flex-col gap-3 min-[721px]:flex-row min-[721px]:items-start min-[721px]:justify-between">
+            <div className="flex flex-col gap-3 min-[1180px]:flex-row min-[1180px]:items-start min-[1180px]:justify-between">
               <div className={sectionHeadClassName}>
-                <h2 className="m-0 text-[17px] font-medium text-[#fff6f8]">
+                <h2 className="m-0 text-[17px] font-medium text-[var(--customizer-text-heading)]">
                   OBS 用 URL
                 </h2>
                 <p className={helperTextClassName}>
@@ -629,14 +629,14 @@ export function CustomizerPage({
                   にはこの URL をそのまま貼ります。
                 </p>
               </div>
-              <span className={statusChipClassName}>Auto Sync</span>
+              <span className={statusChipClassName}>自動同期</span>
             </div>
             {contrastWarnings.length > 0 ? (
-              <div className="rounded-[18px] border border-[rgba(255,214,120,0.32)] bg-[rgba(255,214,120,0.08)] p-4 text-[#fff5dc]">
+              <div className="rounded-[18px] border border-[var(--customizer-warning-border)] bg-[var(--customizer-warning-bg)] p-4 text-[var(--customizer-warning-text)]">
                 <p className="m-0 text-sm font-medium">
                   読みやすさチェックで {contrastWarnings.length} 件の注意があります。
                 </p>
-                <ul className="mt-3 mb-0 flex list-disc flex-col gap-2 pl-5 text-[13px] leading-[1.55] text-[rgba(255,245,220,0.9)]">
+                <ul className="mt-3 mb-0 flex list-disc flex-col gap-2 pl-5 text-[13px] leading-[1.55] text-[var(--customizer-warning-text-soft)]">
                   {contrastWarnings.map((warning) => (
                     <li key={warning.id}>
                       {warning.label} のコントラスト比が {warning.ratio}:1 です。
@@ -685,23 +685,25 @@ export function CustomizerPage({
         <aside className="self-start w-full" data-testid="customizer-preview-panel">
           <div
             ref={previewPanelRef}
-            className="flex flex-col gap-4 rounded-[20px] border border-white/12 p-4 min-[721px]:rounded-[24px] min-[721px]:p-5"
+            className="flex flex-col gap-4 rounded-[20px] border border-[var(--customizer-border-soft)] p-4 min-[721px]:rounded-[24px] min-[721px]:p-5"
             style={{
               ...panelStyle,
               willChange: "transform",
             }}
           >
-            <div className="flex flex-col gap-3 min-[721px]:flex-row min-[721px]:items-start min-[721px]:justify-between">
+            <div className="flex flex-col gap-3 min-[960px]:flex-row min-[960px]:items-start min-[960px]:justify-between">
               <div>
-                <p className="mb-[6px] text-xs font-medium uppercase tracking-[0.16em] text-[#ffd4e0]">
-                  Live Preview
+                <p className="mb-[6px] text-xs font-medium uppercase tracking-[0.16em] text-[var(--customizer-text-accent)]">
+                  Live Canvas
                 </p>
-                <h2 className="m-0 leading-[1.1] text-[#fff6f8]">プレビュー</h2>
+                <h2 className="m-0 leading-[1.1] text-[var(--customizer-text-heading)]">
+                  ライブプレビュー
+                </h2>
               </div>
-              <span className={statusChipClassName}>Direct Render</span>
+              <span className={statusChipClassName}>直接描画</span>
             </div>
             <div
-              className="h-[clamp(320px,58vh,620px)] overflow-hidden rounded-[24px] border border-white/8 p-3 min-[721px]:p-4"
+              className="h-[clamp(320px,58vh,620px)] overflow-hidden rounded-[24px] border border-[var(--customizer-border)] p-3 min-[721px]:p-4"
               style={stageStyle}
               data-testid="customizer-preview"
             >

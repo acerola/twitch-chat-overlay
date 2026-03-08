@@ -1,7 +1,9 @@
 import {
   useDeferredValue,
   useEffect,
+  useEffectEvent,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
 } from "react";
@@ -65,6 +67,9 @@ const inputClassName =
 const statusChipClassName =
   "inline-flex items-center rounded-full border border-white/10 bg-white/[0.06] px-3 py-[6px] text-[12px] font-medium text-[#fff7fa]";
 
+const CUSTOMIZER_DESKTOP_MEDIA_QUERY = "(min-width: 721px)";
+const CUSTOMIZER_PREVIEW_TOP_OFFSET = 24;
+
 type ColorFieldKey = "c" | OverlayColorOverrideKey;
 type ColorCodeInputs = Record<ColorFieldKey, string>;
 
@@ -124,10 +129,33 @@ function getAvatarChoiceClassName(selected: boolean): string {
   return `${choiceBaseClassName} grid justify-items-start gap-2 px-3 py-[14px]${selected ? ` ${selectedChoiceClassName}` : ""}`;
 }
 
+export function getCustomizerPreviewOffset({
+  containerTop,
+  containerHeight,
+  panelHeight,
+  topOffset = CUSTOMIZER_PREVIEW_TOP_OFFSET,
+}: {
+  containerTop: number;
+  containerHeight: number;
+  panelHeight: number;
+  topOffset?: number;
+}): number {
+  if (containerHeight <= 0 || panelHeight <= 0 || panelHeight >= containerHeight) {
+    return 0;
+  }
+
+  const desiredOffset = topOffset - containerTop;
+  const maxOffset = containerHeight - panelHeight;
+
+  return Math.min(Math.max(desiredOffset, 0), maxOffset);
+}
+
 export function CustomizerPage({
   appBaseUrl,
   initialConfig,
 }: CustomizerPageProps) {
+  const layoutRef = useRef<HTMLDivElement | null>(null);
+  const previewPanelRef = useRef<HTMLDivElement | null>(null);
   const [draftConfig, setDraftConfig] =
     useState<OverlayStyleConfig>(initialConfig);
   const [colorCodeInputs, setColorCodeInputs] = useState<ColorCodeInputs>(() =>
@@ -167,6 +195,46 @@ export function CustomizerPage({
   useEffect(() => {
     setCopyLabel("コピー");
   }, [generatedUrl]);
+
+  const syncPreviewPanelPosition = useEffectEvent(() => {
+    if (!layoutRef.current || !previewPanelRef.current) {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia(CUSTOMIZER_DESKTOP_MEDIA_QUERY);
+    const nextOffset = mediaQuery.matches
+      ? getCustomizerPreviewOffset({
+          containerTop: layoutRef.current.getBoundingClientRect().top,
+          containerHeight: layoutRef.current.offsetHeight,
+          panelHeight: previewPanelRef.current.offsetHeight,
+        })
+      : 0;
+
+    previewPanelRef.current.style.transform = `translateY(${nextOffset}px)`;
+  });
+
+  useEffect(() => {
+    let frameId = 0;
+    const mediaQuery = window.matchMedia(CUSTOMIZER_DESKTOP_MEDIA_QUERY);
+
+    const scheduleSync = () => {
+      window.cancelAnimationFrame(frameId);
+      frameId = window.requestAnimationFrame(syncPreviewPanelPosition);
+    };
+
+    scheduleSync();
+
+    window.addEventListener("scroll", scheduleSync, { passive: true });
+    window.addEventListener("resize", scheduleSync);
+    mediaQuery.addEventListener("change", scheduleSync);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.removeEventListener("scroll", scheduleSync);
+      window.removeEventListener("resize", scheduleSync);
+      mediaQuery.removeEventListener("change", scheduleSync);
+    };
+  }, [syncPreviewPanelPosition, draftConfig]);
 
   const onCopyUrl = async () => {
     if (!generatedUrl || !navigator.clipboard) {
@@ -226,7 +294,10 @@ export function CustomizerPage({
       style={pageStyle}
       data-testid="customizer-page"
     >
-      <div className="mx-auto grid w-[min(1380px,100%)] grid-cols-1 items-start gap-[22px] min-[721px]:grid-cols-[minmax(340px,430px)_minmax(0,1fr)]">
+      <div
+        ref={layoutRef}
+        className="mx-auto grid w-[min(1380px,100%)] grid-cols-1 items-start gap-[22px] min-[721px]:grid-cols-[minmax(340px,430px)_minmax(0,1fr)]"
+      >
         <main
           className="flex flex-col gap-5 rounded-[20px] border border-white/12 p-4 min-[721px]:rounded-[24px] min-[721px]:p-6"
           style={panelStyle}
@@ -553,33 +624,39 @@ export function CustomizerPage({
           </div>
         </main>
 
-        <aside
-          className="self-start flex w-full flex-col gap-4 rounded-[20px] border border-white/12 p-4 min-[721px]:rounded-[24px] min-[721px]:p-5"
-          style={panelStyle}
-        >
-          <div className="flex flex-col gap-3 min-[721px]:flex-row min-[721px]:items-start min-[721px]:justify-between">
-            <div>
-              <p className="mb-[6px] text-xs font-medium uppercase tracking-[0.16em] text-[#ffd4e0]">
-                Live Preview
-              </p>
-              <h2 className="m-0 leading-[1.1] text-[#fff6f8]">プレビュー</h2>
-            </div>
-            <span className={statusChipClassName}>Direct Render</span>
-          </div>
+        <aside className="self-start w-full" data-testid="customizer-preview-panel">
           <div
-            className="h-[420px] overflow-hidden rounded-[24px] border border-white/8 p-3 min-[721px]:h-[620px] min-[721px]:p-4"
-            style={stageStyle}
-            data-testid="customizer-preview"
+            ref={previewPanelRef}
+            className="flex flex-col gap-4 rounded-[20px] border border-white/12 p-4 min-[721px]:rounded-[24px] min-[721px]:p-5"
+            style={{
+              ...panelStyle,
+              willChange: "transform",
+            }}
           >
-            <div className="flex h-full w-full items-end">
-              <OverlayScreen
-                channel={null}
-                customizeHref={customizeHref}
-                debugMode={false}
-                testMode={true}
-                styleConfig={previewConfig}
-                embeddedPreview={true}
-              />
+            <div className="flex flex-col gap-3 min-[721px]:flex-row min-[721px]:items-start min-[721px]:justify-between">
+              <div>
+                <p className="mb-[6px] text-xs font-medium uppercase tracking-[0.16em] text-[#ffd4e0]">
+                  Live Preview
+                </p>
+                <h2 className="m-0 leading-[1.1] text-[#fff6f8]">プレビュー</h2>
+              </div>
+              <span className={statusChipClassName}>Direct Render</span>
+            </div>
+            <div
+              className="h-[420px] overflow-hidden rounded-[24px] border border-white/8 p-3 min-[721px]:h-[620px] min-[721px]:p-4"
+              style={stageStyle}
+              data-testid="customizer-preview"
+            >
+              <div className="flex h-full w-full items-end">
+                <OverlayScreen
+                  channel={null}
+                  customizeHref={customizeHref}
+                  debugMode={false}
+                  testMode={true}
+                  styleConfig={previewConfig}
+                  embeddedPreview={true}
+                />
+              </div>
             </div>
           </div>
         </aside>

@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
+import { getCustomizerPreviewOffset } from "./components/CustomizerPage";
 import {
   DEFAULT_OVERLAY_STYLE_CONFIG,
   encodeOverlayStyleConfig,
@@ -8,6 +9,19 @@ import {
 
 describe("App customizer", () => {
   beforeEach(() => {
+    Object.defineProperty(window, "matchMedia", {
+      writable: true,
+      value: vi.fn().mockImplementation((query: string) => ({
+        matches: query === "(min-width: 721px)",
+        media: query,
+        onchange: null,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    });
     vi.unstubAllEnvs();
     vi.stubEnv("VITE_CHANNEL_NAME", "test_channel");
     vi.stubEnv("VITE_DEBUG_MODE", "0");
@@ -24,7 +38,34 @@ describe("App customizer", () => {
 
     expect(screen.getByTestId("customizer-page")).toBeInTheDocument();
     expect(screen.getByTestId("customizer-preview")).toBeInTheDocument();
+    expect(screen.getByTestId("customizer-preview-panel")).toBeInTheDocument();
     expect(screen.getByTestId("overlay-root")).toBeInTheDocument();
+  });
+
+  it("calculates a clamped preview offset from scroll position", () => {
+    expect(
+      getCustomizerPreviewOffset({
+        containerTop: 120,
+        containerHeight: 1100,
+        panelHeight: 720,
+      }),
+    ).toBe(0);
+
+    expect(
+      getCustomizerPreviewOffset({
+        containerTop: -180,
+        containerHeight: 1100,
+        panelHeight: 720,
+      }),
+    ).toBe(204);
+
+    expect(
+      getCustomizerPreviewOffset({
+        containerTop: -900,
+        containerHeight: 1100,
+        panelHeight: 720,
+      }),
+    ).toBe(380);
   });
 
   it("prefills the form from cfg query params", () => {

@@ -31,6 +31,15 @@ export interface AvatarPresetOption {
   description: string;
 }
 
+export interface OverlayContrastWarning {
+  id: "name" | "message" | "alert";
+  label: string;
+  foreground: string;
+  background: string;
+  ratio: number;
+  minimum: number;
+}
+
 export const DEFAULT_OVERLAY_STYLE_CONFIG: OverlayStyleConfig = {
   v: 1,
   f: "kiwi",
@@ -76,6 +85,8 @@ export const AVATAR_PRESET_OPTIONS: readonly AvatarPresetOption[] = [
 const FONT_PRESET_IDS = new Set<FontPresetId>(FONT_PRESET_OPTIONS.map((option) => option.id));
 const AVATAR_PRESET_IDS = new Set<AvatarPresetId>(AVATAR_PRESET_OPTIONS.map((option) => option.id));
 const DEFAULT_FONT_FAMILY = '"Kiwi Maru", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif';
+const MIN_TEXT_CONTRAST_RATIO = 4.5;
+const REPRESENTATIVE_MESSAGE_PLATE_COLOR = "#23181b";
 const DEFAULT_OVERLAY_THEME_VARS = {
   "--flower-color": "#ffa9b5",
   "--message-color": "#fffefe",
@@ -215,6 +226,38 @@ function withAlpha(color: string, alpha: number): string {
   return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${clamp(alpha, 0, 1).toFixed(2)})`;
 }
 
+function srgbChannelToLinear(channel: number): number {
+  const normalized = channel / 255;
+  return normalized <= 0.04045
+    ? normalized / 12.92
+    : ((normalized + 0.055) / 1.055) ** 2.4;
+}
+
+function getRelativeLuminance(color: string): number | null {
+  const rgb = hexToRgb(color);
+  if (!rgb) {
+    return null;
+  }
+
+  return (
+    0.2126 * srgbChannelToLinear(rgb.r) +
+    0.7152 * srgbChannelToLinear(rgb.g) +
+    0.0722 * srgbChannelToLinear(rgb.b)
+  );
+}
+
+function getContrastRatio(foreground: string, background: string): number | null {
+  const foregroundLuminance = getRelativeLuminance(foreground);
+  const backgroundLuminance = getRelativeLuminance(background);
+  if (foregroundLuminance === null || backgroundLuminance === null) {
+    return null;
+  }
+
+  const lighter = Math.max(foregroundLuminance, backgroundLuminance);
+  const darker = Math.min(foregroundLuminance, backgroundLuminance);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
 export function normalizeAccentColor(rawColor: string | null | undefined): string | null {
   if (!rawColor) {
     return null;
@@ -311,6 +354,50 @@ export function createOverlayStyleVars(config: OverlayStyleConfig): Record<`--${
     ...(resolved.ar ? { "--avatar-ring-color": formatAccentColor(resolved.ar) } : {}),
     ...(resolved.as ? { "--avatar-stem-color": formatAccentColor(resolved.as) } : {}),
   };
+}
+
+export function getOverlayContrastWarnings(config: OverlayStyleConfig): OverlayContrastWarning[] {
+  const styleVars = createOverlayStyleVars(config);
+  const checks = [
+    {
+      id: "name" as const,
+      label: "ネーム文字",
+      foreground: styleVars["--name-color"] ?? DEFAULT_OVERLAY_THEME_VARS["--name-color"],
+      background:
+        styleVars["--name-background-color"] ??
+        DEFAULT_OVERLAY_THEME_VARS["--name-background-color"],
+    },
+    {
+      id: "message" as const,
+      label: "メッセージ文字",
+      foreground:
+        styleVars["--message-color"] ?? DEFAULT_OVERLAY_THEME_VARS["--message-color"],
+      background: REPRESENTATIVE_MESSAGE_PLATE_COLOR,
+    },
+    {
+      id: "alert" as const,
+      label: "通知文字",
+      foreground:
+        styleVars["--alert-text-color"] ??
+        DEFAULT_OVERLAY_THEME_VARS["--alert-text-color"],
+      background: REPRESENTATIVE_MESSAGE_PLATE_COLOR,
+    },
+  ];
+
+  return checks.flatMap((check) => {
+    const ratio = getContrastRatio(check.foreground, check.background);
+    if (ratio === null || ratio >= MIN_TEXT_CONTRAST_RATIO) {
+      return [];
+    }
+
+    return [
+      {
+        ...check,
+        ratio: Number(ratio.toFixed(2)),
+        minimum: MIN_TEXT_CONTRAST_RATIO,
+      } satisfies OverlayContrastWarning,
+    ];
+  });
 }
 
 export function buildOverlayUrl(appBaseUrl: string, config: OverlayStyleConfig): string {

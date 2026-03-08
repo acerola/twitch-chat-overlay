@@ -96,6 +96,10 @@ describe("App customizer", () => {
     await waitFor(() => {
       expect(overlayRoot.style.getPropertyValue("--overlay-font-family")).toContain("Kaisei Decol");
     });
+
+    expect(
+      screen.getByRole("button", { name: "Kaisei Decol 和風デコ文字" }),
+    ).toHaveAttribute("aria-pressed", "true");
   });
 
   it("keeps the OBS URL in sync without channel and debug params", () => {
@@ -155,5 +159,46 @@ describe("App customizer", () => {
     fireEvent.click(screen.getByRole("button", { name: "デフォルトへ戻す" }));
 
     expect(screen.getByLabelText("メインカラー")).toHaveValue(`#${DEFAULT_OVERLAY_STYLE_CONFIG.c}`);
+  });
+
+  it("shows contrast warnings for unreadable overrides", async () => {
+    window.history.pushState({}, "", "/?customize=1");
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "詳細カラーを開く" }));
+    fireEvent.change(screen.getByLabelText("ネーム文字コード"), {
+      target: { value: "#f9d9de" },
+    });
+
+    expect(
+      await screen.findByText(/読みやすさチェックで 1 件の注意があります。/),
+    ).toBeInTheDocument();
+  });
+
+  it("selects the generated url when clipboard is unavailable", async () => {
+    const focusMock = vi.fn();
+    const selectMock = vi.fn();
+
+    Object.defineProperty(window.navigator, "clipboard", {
+      configurable: true,
+      value: undefined,
+    });
+
+    window.history.pushState({}, "", "/?customize=1");
+    render(<App />);
+
+    const output = screen.getByLabelText("生成URL") as HTMLTextAreaElement;
+    output.focus = focusMock;
+    output.select = selectMock;
+
+    fireEvent.click(screen.getByRole("button", { name: "コピー" }));
+
+    await waitFor(() => {
+      expect(focusMock).toHaveBeenCalled();
+      expect(selectMock).toHaveBeenCalled();
+    });
+    expect(
+      screen.getByText(/自動コピーできないため、URL を選択しました。Ctrl\+C でコピーしてください。/),
+    ).toBeInTheDocument();
   });
 });

@@ -17,6 +17,7 @@ import {
   DEFAULT_OVERLAY_STYLE_CONFIG,
   FONT_PRESET_OPTIONS,
   formatAccentColor,
+  getOverlayContrastWarnings,
   normalizeAccentColor,
   type OverlayColorOverrideKey,
   type OverlayStyleConfig,
@@ -156,6 +157,7 @@ export function CustomizerPage({
 }: CustomizerPageProps) {
   const layoutRef = useRef<HTMLDivElement | null>(null);
   const previewPanelRef = useRef<HTMLDivElement | null>(null);
+  const generatedUrlRef = useRef<HTMLTextAreaElement | null>(null);
   const [draftConfig, setDraftConfig] =
     useState<OverlayStyleConfig>(initialConfig);
   const [colorCodeInputs, setColorCodeInputs] = useState<ColorCodeInputs>(() =>
@@ -188,6 +190,11 @@ export function CustomizerPage({
   const activeOverrideCount = ADVANCED_COLOR_OPTIONS.filter(
     (option) => draftConfig[option.key],
   ).length;
+  const contrastWarnings = useMemo(
+    () => getOverlayContrastWarnings(draftConfig),
+    [draftConfig],
+  );
+
   useEffect(() => {
     setColorCodeInputs(buildColorCodeInputs(draftConfig));
   }, [draftConfig]);
@@ -228,16 +235,39 @@ export function CustomizerPage({
     window.addEventListener("resize", scheduleSync);
     mediaQuery.addEventListener("change", scheduleSync);
 
+    let observer: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined") {
+      observer = new ResizeObserver(scheduleSync);
+      if (layoutRef.current) {
+        observer.observe(layoutRef.current);
+      }
+      if (previewPanelRef.current) {
+        observer.observe(previewPanelRef.current);
+      }
+    }
+
     return () => {
       window.cancelAnimationFrame(frameId);
       window.removeEventListener("scroll", scheduleSync);
       window.removeEventListener("resize", scheduleSync);
       mediaQuery.removeEventListener("change", scheduleSync);
+      observer?.disconnect();
     };
-  }, [syncPreviewPanelPosition, draftConfig]);
+  }, [syncPreviewPanelPosition]);
 
   const onCopyUrl = async () => {
-    if (!generatedUrl || !navigator.clipboard) {
+    if (!generatedUrl) {
+      return;
+    }
+
+    const selectGeneratedUrl = () => {
+      generatedUrlRef.current?.focus();
+      generatedUrlRef.current?.select();
+      setCopyLabel("手動コピー");
+    };
+
+    if (!navigator.clipboard) {
+      selectGeneratedUrl();
       return;
     }
 
@@ -245,7 +275,7 @@ export function CustomizerPage({
       await navigator.clipboard.writeText(generatedUrl);
       setCopyLabel("コピー済み");
     } catch {
-      setCopyLabel("失敗");
+      selectGeneratedUrl();
     }
   };
 
@@ -341,12 +371,17 @@ export function CustomizerPage({
                 丸文字系を中心に、配信で読みやすい 4 種だけに絞ります。
               </p>
             </div>
-            <div className="grid grid-cols-1 gap-[10px] min-[721px]:grid-cols-2">
+            <div
+              className="grid grid-cols-1 gap-[10px] min-[721px]:grid-cols-2"
+              role="group"
+              aria-label="フォント選択"
+            >
               {FONT_PRESET_OPTIONS.map((option) => (
                 <button
                   key={option.id}
                   type="button"
                   className={getChoiceClassName(draftConfig.f === option.id)}
+                  aria-pressed={draftConfig.f === option.id}
                   onClick={() =>
                     setDraftConfig((current) => ({ ...current, f: option.id }))
                   }
@@ -432,7 +467,11 @@ export function CustomizerPage({
                 アップロードは使わず、共有しやすいプリセットだけで完結させます。
               </p>
             </div>
-            <div className="grid grid-cols-1 gap-[10px] min-[721px]:grid-cols-2">
+            <div
+              className="grid grid-cols-1 gap-[10px] min-[721px]:grid-cols-2"
+              role="group"
+              aria-label="プロフィールアイコン選択"
+            >
               {AVATAR_PRESET_OPTIONS.map((option) => (
                 <button
                   key={option.id}
@@ -440,6 +479,7 @@ export function CustomizerPage({
                   className={getAvatarChoiceClassName(
                     draftConfig.a === option.id,
                   )}
+                  aria-pressed={draftConfig.a === option.id}
                   onClick={() =>
                     setDraftConfig((current) => ({ ...current, a: option.id }))
                   }
@@ -481,7 +521,7 @@ export function CustomizerPage({
                 </span>
                 <button
                   type="button"
-                  className={secondaryButtonClassName}
+                  className={`${secondaryButtonClassName} min-h-[44px]`}
                   onClick={() => setShowAdvancedColors((current) => !current)}
                   aria-expanded={showAdvancedColors}
                   aria-controls="advanced-color-panel"
@@ -492,7 +532,7 @@ export function CustomizerPage({
                 </button>
                 <button
                   type="button"
-                  className={secondaryButtonClassName}
+                  className={`${secondaryButtonClassName} min-h-[44px]`}
                   onClick={onResetColorOverrides}
                 >
                   個別色を解除
@@ -591,10 +631,25 @@ export function CustomizerPage({
               </div>
               <span className={statusChipClassName}>Auto Sync</span>
             </div>
+            {contrastWarnings.length > 0 ? (
+              <div className="rounded-[18px] border border-[rgba(255,214,120,0.32)] bg-[rgba(255,214,120,0.08)] p-4 text-[#fff5dc]">
+                <p className="m-0 text-sm font-medium">
+                  読みやすさチェックで {contrastWarnings.length} 件の注意があります。
+                </p>
+                <ul className="mt-3 mb-0 flex list-disc flex-col gap-2 pl-5 text-[13px] leading-[1.55] text-[rgba(255,245,220,0.9)]">
+                  {contrastWarnings.map((warning) => (
+                    <li key={warning.id}>
+                      {warning.label} のコントラスト比が {warning.ratio}:1 です。
+                      目安の {warning.minimum}:1 を下回っています。
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
             <div className="flex flex-wrap gap-[10px]">
               <button
                 type="button"
-                className={primaryButtonClassName}
+                className={`${primaryButtonClassName} min-h-[44px]`}
                 onClick={onCopyUrl}
                 disabled={!generatedUrl}
               >
@@ -602,13 +657,14 @@ export function CustomizerPage({
               </button>
               <button
                 type="button"
-                className={secondaryButtonClassName}
+                className={`${secondaryButtonClassName} min-h-[44px]`}
                 onClick={onResetTheme}
               >
                 デフォルトへ戻す
               </button>
             </div>
             <textarea
+              ref={generatedUrlRef}
               aria-label="生成URL"
               className={`${inputClassName} min-h-24 resize-y p-[14px]`}
               value={generatedUrl}
@@ -619,6 +675,8 @@ export function CustomizerPage({
             <p className={helperTextClassName} aria-live="polite">
               {copyLabel === "コピー済み"
                 ? "URL をクリップボードにコピーしました。"
+                : copyLabel === "手動コピー"
+                  ? "自動コピーできないため、URL を選択しました。Ctrl+C でコピーしてください。"
                 : "変更は自動反映されます。"}
             </p>
           </div>
@@ -643,7 +701,7 @@ export function CustomizerPage({
               <span className={statusChipClassName}>Direct Render</span>
             </div>
             <div
-              className="h-[420px] overflow-hidden rounded-[24px] border border-white/8 p-3 min-[721px]:h-[620px] min-[721px]:p-4"
+              className="h-[clamp(320px,58vh,620px)] overflow-hidden rounded-[24px] border border-white/8 p-3 min-[721px]:p-4"
               style={stageStyle}
               data-testid="customizer-preview"
             >

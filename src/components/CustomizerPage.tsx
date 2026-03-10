@@ -106,6 +106,7 @@ const ADVANCED_COLOR_OPTIONS: ReadonlyArray<{
     description: "プロフィールアイコンの輪郭色です。",
   },
   { key: "as", label: "アバター線色", description: "花やバッジ線画の色です。" },
+  { key: "dc", label: "サイドドット", description: "メッセージ横の装飾ドットの色です。" },
 ] as const;
 
 function buildColorCodeInputs(config: OverlayStyleConfig): ColorCodeInputs {
@@ -119,6 +120,7 @@ function buildColorCodeInputs(config: OverlayStyleConfig): ColorCodeInputs {
     ac: styleVars["--alert-text-color"] ?? "#fffefe",
     ar: styleVars["--avatar-ring-color"] ?? "#ffc9d4",
     as: styleVars["--avatar-stem-color"] ?? "#7b563c",
+    dc: styleVars["--side-dot-color"] ?? "#fffff0",
   };
 }
 
@@ -141,7 +143,11 @@ export function getCustomizerPreviewOffset({
   panelHeight: number;
   topOffset?: number;
 }): number {
-  if (containerHeight <= 0 || panelHeight <= 0 || panelHeight >= containerHeight) {
+  if (
+    containerHeight <= 0 ||
+    panelHeight <= 0 ||
+    panelHeight >= containerHeight
+  ) {
     return 0;
   }
 
@@ -294,6 +300,7 @@ export function CustomizerPage({
       ac: undefined,
       ar: undefined,
       as: undefined,
+      dc: undefined,
     }));
     setShowAdvancedColors(false);
     setCopyLabel("コピー");
@@ -338,13 +345,8 @@ export function CustomizerPage({
                 Overlay Studio
               </p>
               <h1 className="m-0 text-[clamp(30px,4vw,42px)] leading-[1.1] text-[var(--customizer-text-heading)]">
-                オーバーレイを整える
+                オーバーレイ調整
               </h1>
-              <p className={helperTextClassName}>
-                左で見た目を調整すると、右のプレビューと OBS 用 URL
-                が自動で更新されます。 チャンネル名とデバッグ設定は `.env`
-                前提です。
-              </p>
             </div>
             <div className="flex flex-wrap gap-[10px]">
               <span className={statusChipClassName}>
@@ -367,9 +369,6 @@ export function CustomizerPage({
               <h2 className="m-0 text-[17px] font-medium text-[var(--customizer-text-heading)]">
                 フォント
               </h2>
-              <p className={helperTextClassName}>
-                丸文字系を中心に、配信で読みやすい 4 種だけに絞ります。
-              </p>
             </div>
             <div
               className="grid grid-cols-1 gap-[10px] min-[1180px]:grid-cols-2"
@@ -629,18 +628,18 @@ export function CustomizerPage({
                   にはこの URL をそのまま貼ります。
                 </p>
               </div>
-              <span className={statusChipClassName}>自動同期</span>
             </div>
             {contrastWarnings.length > 0 ? (
               <div className="rounded-[18px] border border-[var(--customizer-warning-border)] bg-[var(--customizer-warning-bg)] p-4 text-[var(--customizer-warning-text)]">
                 <p className="m-0 text-sm font-medium">
-                  読みやすさチェックで {contrastWarnings.length} 件の注意があります。
+                  読みやすさチェックで {contrastWarnings.length}{" "}
+                  件の注意があります。
                 </p>
                 <ul className="mt-3 mb-0 flex list-disc flex-col gap-2 pl-5 text-[13px] leading-[1.55] text-[var(--customizer-warning-text-soft)]">
                   {contrastWarnings.map((warning) => (
                     <li key={warning.id}>
-                      {warning.label} のコントラスト比が {warning.ratio}:1 です。
-                      目安の {warning.minimum}:1 を下回っています。
+                      {warning.label} のコントラスト比が {warning.ratio}:1
+                      です。 目安の {warning.minimum}:1 を下回っています。
                     </li>
                   ))}
                 </ul>
@@ -677,12 +676,15 @@ export function CustomizerPage({
                 ? "URL をクリップボードにコピーしました。"
                 : copyLabel === "手動コピー"
                   ? "自動コピーできないため、URL を選択しました。Ctrl+C でコピーしてください。"
-                : "変更は自動反映されます。"}
+                  : "変更は自動反映されます。"}
             </p>
           </div>
         </main>
 
-        <aside className="self-start w-full" data-testid="customizer-preview-panel">
+        <aside
+          className="self-start w-full"
+          data-testid="customizer-preview-panel"
+        >
           <div
             ref={previewPanelRef}
             className="flex flex-col gap-4 rounded-[20px] border border-[var(--customizer-border-soft)] p-4 min-[721px]:rounded-[24px] min-[721px]:p-5"
@@ -700,10 +702,9 @@ export function CustomizerPage({
                   ライブプレビュー
                 </h2>
               </div>
-              <span className={statusChipClassName}>直接描画</span>
             </div>
             <div
-              className="h-[clamp(320px,58vh,620px)] overflow-hidden rounded-[24px] border border-[var(--customizer-border)] p-3 min-[721px]:p-4"
+              className="h-[clamp(320px,58vh,620px)] overflow-visible rounded-[24px] border border-[var(--customizer-border)] p-3 min-[721px]:p-4"
               style={stageStyle}
               data-testid="customizer-preview"
             >
@@ -711,7 +712,7 @@ export function CustomizerPage({
                 <OverlayScreen
                   channel={null}
                   customizeHref={customizeHref}
-                  debugMode={false}
+                  debugMode={true}
                   testMode={true}
                   styleConfig={previewConfig}
                   embeddedPreview={true}

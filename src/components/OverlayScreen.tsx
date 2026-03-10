@@ -413,7 +413,7 @@ export function OverlayScreen({
                 data-item-type="alert"
                 data-item-id={item.alert.id}
               >
-                <ChatAlertItem alert={item.alert} />
+                <ChatAlertItem alert={item.alert} avatarPreset={styleConfig.a} />
               </div>
             );
           }

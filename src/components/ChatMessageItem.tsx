@@ -1,14 +1,14 @@
 import { BadgeIcon } from "./BadgeIcon";
-import { FlowerIcon } from "./FlowerIcon";
+import { DividerIcon } from "./DividerIcon";
 import { AvatarBadgeIcon } from "./AvatarBadgeIcon";
-import { SakuraLeafIcon } from "./SakuraLeafIcon";
+import { SideMarkerIcon } from "./SideMarkerIcon";
 import { DEFAULT_OVERLAY_STYLE_CONFIG, type AvatarPresetId } from "../lib/overlay-customization";
 import { getRoleBadges, isEmoteOnlyMessage, parseMessageWithEmotes } from "../overlay-utils";
 import type { ChatMessage } from "../types/overlay";
 
 const sideMarkerClassName =
   "absolute z-[3] animate-[side-marker-in_260ms_cubic-bezier(0.22,0.8,0.2,1)_both]";
-const sideDotClassName = `${sideMarkerClassName} rounded-full bg-white/[0.94] shadow-[0_0_0_1px_rgba(255,255,255,0.22)]`;
+const sideDotClassName = `${sideMarkerClassName} rounded-full bg-[var(--side-dot-color)] shadow-[0_0_0_1px_var(--side-dot-ring)]`;
 const messageTextBaseClassName =
   "message-text overflow-hidden text-[clamp(17px,1.55vw,22px)] leading-[1.28] font-medium tracking-[0.002em] text-[var(--message-color)] [overflow-wrap:anywhere] [display:-webkit-box] [-webkit-line-clamp:3] [line-clamp:3] [-webkit-box-orient:vertical] [max-height:calc(1.28em*3)] text-ellipsis";
 
@@ -50,7 +50,8 @@ export function ChatMessageItem({
             className={`${sideDotClassName} left-[var(--avatar-side-dot-2-x)] top-[var(--avatar-side-dot-2-y)] h-[var(--avatar-side-dot-size-sm)] w-[var(--avatar-side-dot-size-sm)]`}
             style={{ animationDelay: "70ms" }}
           />
-          <SakuraLeafIcon
+          <SideMarkerIcon
+            preset={avatarPreset}
             className={`${sideMarkerClassName} left-[var(--avatar-side-leaf-x)] top-[var(--avatar-side-leaf-y)] h-[var(--avatar-side-leaf-size)] w-[var(--avatar-side-leaf-size)] origin-[58%_46%] rotate-[-38deg] scale-x-[0.92] text-[var(--flower-color)] [fill:currentColor]`}
             style={{ animationDelay: "115ms" }}
           />
@@ -80,7 +81,7 @@ export function ChatMessageItem({
 
           {roleBadges.length > 0 ? (
             <>
-              <FlowerIcon className="name-role-flower h-[10px] w-[10px] shrink-0 translate-y-[0.5px] text-[var(--flower-color)] [fill:currentColor]" />
+              <DividerIcon preset={avatarPreset} className="name-role-flower h-[13px] w-[13px] shrink-0 translate-y-[0.5px] text-[var(--flower-color)] [fill:currentColor]" />
               <span className="role-list inline-flex flex-wrap items-center gap-[5px]">
                 <span className="role-pill inline-flex items-center gap-[6px] rounded-full border-[1.5px] border-[var(--role-pill-border-color)] bg-[var(--role-pill-background-color)] px-2 py-[2px]">
                   {roleBadges.map((badge, index) => (

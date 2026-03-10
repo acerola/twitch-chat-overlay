@@ -27,6 +27,8 @@
     --avatar-badge-size: 56px;
     --avatar-badge-x: 6px;
     --avatar-badge-y: 10px;
+    --side-dot-color: rgba(255, 255, 255, 0.94);
+    --side-dot-ring: rgba(255, 255, 255, 0.22);
     --avatar-side-dot-size: 6.6px;
     --avatar-side-dot-size-sm: 4.6px;
     --avatar-side-dot-1-x: 6.3px;
@@ -37,7 +39,7 @@
     --avatar-side-leaf-y: 34.2px;
     --avatar-side-leaf-size: 10.8px;
     --avatar-side-dot-3-x: -1.8px;
-    --avatar-side-dot-3-y: 47.6px;
+    --avatar-side-dot-3-y: 52px;
     --avatar-side-dot-4-x: 6.3px;
     --avatar-side-dot-4-y: 61.2px;
     --connector-chain-x: 28px;
@@ -114,6 +116,53 @@
 
   100% {
     opacity: 1;
+  }
+}
+
+@keyframes vampire-flap-l {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+
+  35% {
+    transform: rotate(-9deg);
+  }
+
+  70% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes vampire-flap-r {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+
+  35% {
+    transform: rotate(9deg);
+  }
+
+  70% {
+    transform: rotate(-3deg);
+  }
+}
+
+.vampire-wing-l {
+  transform-box: fill-box;
+  transform-origin: right 60%;
+  animation: vampire-flap-l 0.45s ease-in-out 3;
+}
+
+.vampire-wing-r {
+  transform-box: fill-box;
+  transform-origin: left 60%;
+  animation: vampire-flap-r 0.45s ease-in-out 3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vampire-wing-l,
+  .vampire-wing-r {
+    animation: none;
   }
 }
 

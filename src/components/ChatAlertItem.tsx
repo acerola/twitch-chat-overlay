@@ -1,7 +1,8 @@
 import { AlertKindIcon } from "./AlertKindIcon";
+import type { AvatarPresetId } from "../lib/overlay-customization";
 import type { OverlayAlert } from "../types/overlay";
 
-export function ChatAlertItem({ alert }: { alert: OverlayAlert }) {
+export function ChatAlertItem({ alert, avatarPreset = "blossom" }: { alert: OverlayAlert; avatarPreset?: AvatarPresetId }) {
   return (
     <div className="message-alert-item flex w-full items-center justify-center bg-transparent py-[3px] animate-[chat-enter_760ms_ease-in-out_both]">
       <div
@@ -10,6 +11,7 @@ export function ChatAlertItem({ alert }: { alert: OverlayAlert }) {
       >
         <AlertKindIcon
           kind={alert.kind}
+          preset={avatarPreset}
           className="h-[15px] w-[15px] shrink-0 translate-y-[-0.25px] fill-current stroke-current [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:1.8] text-[var(--flower-color)] drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
         />
         <span>{alert.text}</span>

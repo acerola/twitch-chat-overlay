@@ -2,7 +2,7 @@ import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from
 
 export type FontPresetId = "kiwi" | "zen" | "mplus" | "kaisei";
 export type AvatarPresetId = "blossom" | "crescent" | "gem" | "star" | "vampire";
-export type OverlayColorOverrideKey = "fc" | "nb" | "nt" | "mc" | "ac" | "ar" | "as";
+export type OverlayColorOverrideKey = "fc" | "nb" | "nt" | "mc" | "ac" | "ar" | "as" | "dc";
 
 export interface OverlayStyleConfig {
   v: 1;
@@ -16,6 +16,7 @@ export interface OverlayStyleConfig {
   ac?: string;
   ar?: string;
   as?: string;
+  dc?: string;
 }
 
 export interface FontPresetOption {
@@ -288,6 +289,7 @@ export function resolveOverlayStyleConfig(input: Partial<OverlayStyleConfig> | n
     ac: normalizeAccentColor(input?.ac) ?? undefined,
     ar: normalizeAccentColor(input?.ar) ?? undefined,
     as: normalizeAccentColor(input?.as) ?? undefined,
+    dc: normalizeAccentColor(input?.dc) ?? undefined,
   };
 }
 
@@ -353,6 +355,7 @@ export function createOverlayStyleVars(config: OverlayStyleConfig): Record<`--${
     ...(resolved.ac ? { "--alert-text-color": formatAccentColor(resolved.ac) } : {}),
     ...(resolved.ar ? { "--avatar-ring-color": formatAccentColor(resolved.ar) } : {}),
     ...(resolved.as ? { "--avatar-stem-color": formatAccentColor(resolved.as) } : {}),
+    ...(resolved.dc ? { "--side-dot-color": formatAccentColor(resolved.dc) } : {}),
   };
 }
 

@@ -1,12 +1,14 @@
-import { FlowerIcon } from "./FlowerIcon";
+import { DividerIcon } from "./DividerIcon";
+import type { AvatarPresetId } from "../lib/overlay-customization";
 import type { OverlayAlert } from "../types/overlay";
 
 interface AlertKindIconProps {
   kind: OverlayAlert["kind"];
   className?: string;
+  preset?: AvatarPresetId;
 }
 
-export function AlertKindIcon({ kind, className }: AlertKindIconProps) {
+export function AlertKindIcon({ kind, className, preset = "blossom" }: AlertKindIconProps) {
   if (kind === "cheer") {
     return (
       <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
@@ -42,5 +44,5 @@ export function AlertKindIcon({ kind, className }: AlertKindIconProps) {
     );
   }
 
-  return <FlowerIcon className={className} />;
+  return <DividerIcon preset={preset} className={className} />;
 }

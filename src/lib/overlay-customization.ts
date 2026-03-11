@@ -1,7 +1,7 @@
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "lz-string";
 
 export type FontPresetId = "kiwi" | "zen" | "mplus" | "kaisei";
-export type AvatarPresetId = "blossom" | "crescent" | "gem" | "star" | "vampire";
+export type AvatarPresetId = "blossom" | "crescent" | "star" | "vampire";
 export type OverlayColorOverrideKey = "fc" | "nb" | "nt" | "mc" | "ac" | "ar" | "as" | "dc";
 
 export interface OverlayStyleConfig {
@@ -78,7 +78,6 @@ export const FONT_PRESET_OPTIONS: readonly FontPresetOption[] = [
 export const AVATAR_PRESET_OPTIONS: readonly AvatarPresetOption[] = [
   { id: "blossom", label: "Blossom", description: "現在の桜バッジ" },
   { id: "crescent", label: "Crescent", description: "月と小花のバッジ" },
-  { id: "gem", label: "Gem", description: "宝石モチーフ" },
   { id: "star", label: "Star", description: "星モチーフ" },
   { id: "vampire", label: "Vampire Wings", description: "吸血鬼の翼モチーフ" },
 ];

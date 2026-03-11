@@ -25,14 +25,6 @@ function CrescentPath() {
   );
 }
 
-function GemPath() {
-  return (
-    <>
-      <path d="M4 9h16l-8 13Z" fill="currentColor" />
-      <path d="M4 9l2.5-5h11L20 9Z" fill="currentColor" opacity="0.7" />
-    </>
-  );
-}
 
 function StarPath() {
   return (
@@ -50,8 +42,6 @@ export function SideMarkerIcon({ className, style, preset }: SideMarkerIconProps
         <BatWingPath />
       ) : preset === "crescent" ? (
         <CrescentPath />
-      ) : preset === "gem" ? (
-        <GemPath />
       ) : preset === "star" ? (
         <StarPath />
       ) : (

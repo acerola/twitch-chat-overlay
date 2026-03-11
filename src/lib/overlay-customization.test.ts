@@ -37,7 +37,7 @@ describe("overlay customization", () => {
   });
 
   it("falls back to defaults when packed config has an unsupported version", () => {
-    const packed = compressToEncodedURIComponent(JSON.stringify({ v: 2, f: "zen", c: "123456", a: "gem" }));
+    const packed = compressToEncodedURIComponent(JSON.stringify({ v: 2, f: "zen", c: "123456", a: "star" }));
 
     expect(decodeOverlayStyleConfig(packed)).toEqual(DEFAULT_OVERLAY_STYLE_CONFIG);
   });
@@ -73,7 +73,7 @@ describe("overlay customization", () => {
       v: 1,
       f: "mplus",
       c: "225588",
-      a: "gem",
+      a: "star",
     });
 
     expect(styleVars["--overlay-font-family"]).toContain("M PLUS Rounded 1c");

@@ -155,7 +155,7 @@ describe("App customizer", () => {
     fireEvent.change(screen.getByLabelText("メインカラー"), {
       target: { value: "#123456" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Gem 宝石モチーフ" }));
+    fireEvent.click(screen.getByRole("button", { name: "Star 星モチーフ" }));
     fireEvent.click(screen.getByRole("button", { name: "デフォルトへ戻す" }));
 
     expect(screen.getByLabelText("メインカラー")).toHaveValue(`#${DEFAULT_OVERLAY_STYLE_CONFIG.c}`);

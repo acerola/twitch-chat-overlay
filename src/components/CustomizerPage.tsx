@@ -81,8 +81,8 @@ const ADVANCED_COLOR_OPTIONS: ReadonlyArray<{
 }> = [
   {
     key: "fc",
-    label: "花アクセント",
-    description: "花アイコンや装飾の差し色です。",
+    label: "装飾アクセント",
+    description: "区切りアイコンやサイドマーカーの差し色です。",
   },
   {
     key: "nb",
@@ -105,7 +105,7 @@ const ADVANCED_COLOR_OPTIONS: ReadonlyArray<{
     label: "アバター外枠",
     description: "プロフィールアイコンの輪郭色です。",
   },
-  { key: "as", label: "アバター線色", description: "花やバッジ線画の色です。" },
+  { key: "as", label: "装飾線色", description: "バッジやマーカーの線画色です。" },
   { key: "dc", label: "サイドドット", description: "メッセージ横の装飾ドットの色です。" },
 ] as const;
 
@@ -405,7 +405,7 @@ export function CustomizerPage({
                 メインカラー
               </h2>
               <p className={helperTextClassName}>
-                花・ネームピル・バッジ配色はこの 1 色から自動で組み立てます。
+                装飾・ネームピル・バッジ配色はこの 1 色から自動で組み立てます。
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -463,7 +463,7 @@ export function CustomizerPage({
                 プロフィールアイコン
               </h2>
               <p className={helperTextClassName}>
-                アップロードは使わず、共有しやすいプリセットだけで完結させます。
+                プリセットを選ぶと、区切りアイコンやサイドマーカーも連動して変わります。
               </p>
             </div>
             <div

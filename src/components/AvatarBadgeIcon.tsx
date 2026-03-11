@@ -126,36 +126,6 @@ function CrescentBadge() {
   );
 }
 
-function GemBadge() {
-  return (
-    <>
-      <path
-        fill="var(--avatar-accent-1)"
-        d="M32 14.6l12.8 7.8v14.7L32 49.4 19.2 37.1V22.4L32 14.6z"
-      />
-      <path
-        fill="var(--avatar-accent-3)"
-        d="M32 18.6l9.1 5.4v10.6L32 43.4l-9.1-8.8V24l9.1-5.4z"
-      />
-      <path
-        fill="var(--avatar-accent-5)"
-        d="M32 18.6v24.8l9.1-8.8V24L32 18.6z"
-      />
-      <path
-        fill="none"
-        stroke="#ffffff"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-        d="M32 18.6l9.1 5.4v10.6L32 43.4l-9.1-8.8V24L32 18.6z"
-      />
-      <g fill="#ffffff" opacity="0.96">
-        <path d="M16.4 22.1l0.9 2.1 2.3 0.8-2.3 0.9-0.9 2.3-0.9-2.3-2.3-0.9 2.3-0.8 0.9-2.1z" />
-        <path d="M47.7 16.7l0.8 1.8 2 0.8-2 0.8-0.8 2-0.8-2-1.9-0.8 1.9-0.8 0.8-1.8z" />
-        <path d="M48.3 41.7l0.7 1.5 1.7 0.7-1.7 0.6-0.7 1.7-0.6-1.7-1.7-0.6 1.7-0.7 0.6-1.5z" />
-      </g>
-    </>
-  );
-}
 
 function StarBadge() {
   return (
@@ -287,8 +257,6 @@ function renderPreset(preset: AvatarPresetId) {
   switch (preset) {
     case "crescent":
       return <CrescentBadge />;
-    case "gem":
-      return <GemBadge />;
     case "star":
       return <StarBadge />;
     case "blossom":

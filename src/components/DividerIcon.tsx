@@ -26,14 +26,6 @@ export function DividerIcon({ className, preset }: DividerIconProps) {
           d="M14.5 5.5c-3.8 1-6.2 4.5-5.4 8.4.6 3.2 3.1 5.5 6.1 6.1-.9.3-1.8.5-2.8.5-4.2 0-7.7-3.5-7.7-7.7S8.4 5 12.6 5c.7 0 1.3.1 1.9.5z"
           fill="currentColor"
         />
-      ) : preset === "gem" ? (
-        /* Brilliant-cut diamond */
-        <>
-          <path d="M4 9h16l-8 13Z" fill="currentColor" />
-          <path d="M4 9l2.5-5h11L20 9Z" fill="currentColor" opacity="0.7" />
-          <path d="M9 4l3 5 3-5" fill="none" stroke="currentColor" strokeWidth="0.8" opacity="0.5" />
-          <path d="M4 9h16" fill="none" stroke="currentColor" strokeWidth="0.6" opacity="0.4" />
-        </>
       ) : preset === "star" ? (
         /* Small star */
         <path

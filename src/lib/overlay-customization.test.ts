@@ -15,7 +15,7 @@ describe("overlay customization", () => {
   it("round-trips a non-default packed config", () => {
     const packed = encodeOverlayStyleConfig({
       v: 1,
-      f: "kaisei",
+      f: "rocknroll",
       c: "123456",
       a: "vampire",
       nt: "faf7ff",
@@ -24,7 +24,7 @@ describe("overlay customization", () => {
 
     expect(decodeOverlayStyleConfig(packed)).toEqual({
       v: 1,
-      f: "kaisei",
+      f: "rocknroll",
       c: "123456",
       a: "vampire",
       nt: "faf7ff",
@@ -80,6 +80,17 @@ describe("overlay customization", () => {
     expect(styleVars["--flower-color"]).toBe("#225588");
     expect(styleVars["--name-background-color"]).toMatch(/^#/);
     expect(styleVars["--avatar-accent-1"]).toMatch(/^#/);
+  });
+
+  it("resolves newly added font presets into overlay font variables", () => {
+    const styleVars = createOverlayStyleVars({
+      v: 1,
+      f: "rocknroll",
+      c: DEFAULT_OVERLAY_STYLE_CONFIG.c,
+      a: "blossom",
+    });
+
+    expect(styleVars["--overlay-font-family"]).toContain("RocknRoll One");
   });
 
   it("applies explicit color overrides on top of the derived palette", () => {

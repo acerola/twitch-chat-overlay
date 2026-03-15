@@ -1,6 +1,12 @@
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "lz-string";
 
-export type FontPresetId = "kiwi" | "zen" | "mplus" | "kaisei";
+export type FontPresetId =
+  | "kiwi"
+  | "zen"
+  | "mplus"
+  | "rocknroll"
+  | "dotgothic"
+  | "klee";
 export type AvatarPresetId = "blossom" | "crescent" | "star" | "vampire";
 export type OverlayColorOverrideKey = "fc" | "nb" | "nt" | "mc" | "ac" | "ar" | "as" | "dc";
 
@@ -68,10 +74,22 @@ export const FONT_PRESET_OPTIONS: readonly FontPresetOption[] = [
     fontFamily: '"M PLUS Rounded 1c", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif',
   },
   {
-    id: "kaisei",
-    label: "Kaisei Decol",
-    previewText: "和風デコ文字",
-    fontFamily: '"Kaisei Decol", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif',
+    id: "rocknroll",
+    label: "RocknRoll One",
+    previewText: "ポップ太字",
+    fontFamily: '"RocknRoll One", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif',
+  },
+  {
+    id: "dotgothic",
+    label: "DotGothic16",
+    previewText: "レトロドット",
+    fontFamily: '"DotGothic16", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif',
+  },
+  {
+    id: "klee",
+    label: "Klee One",
+    previewText: "やさしい手書き",
+    fontFamily: '"Klee One", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif',
   },
 ];
 

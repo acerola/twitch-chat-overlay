@@ -18,7 +18,7 @@ describe("App themed overlay", () => {
   it("applies font and accent theme variables from cfg", () => {
     const packed = encodeOverlayStyleConfig({
       v: 1,
-      f: "kaisei",
+      f: "rocknroll",
       c: "225588",
       a: "crescent",
       mc: "f8f4ff",
@@ -29,7 +29,7 @@ describe("App themed overlay", () => {
     render(<App />);
 
     const overlayRoot = screen.getByTestId("overlay-root");
-    expect(overlayRoot.style.getPropertyValue("--overlay-font-family")).toContain("Kaisei Decol");
+    expect(overlayRoot.style.getPropertyValue("--overlay-font-family")).toContain("RocknRoll One");
     expect(overlayRoot.style.getPropertyValue("--flower-color")).toBe("#225588");
     expect(overlayRoot.style.getPropertyValue("--message-color")).toBe("#f8f4ff");
     expect(overlayRoot.style.getPropertyValue("--name-color")).toBe("#24111f");

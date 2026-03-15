@@ -71,7 +71,7 @@ describe("App customizer", () => {
   it("prefills the form from cfg query params", () => {
     const packed = encodeOverlayStyleConfig({
       v: 1,
-      f: "kaisei",
+      f: "rocknroll",
       c: "224466",
       a: "star",
       nt: "faf7ff",
@@ -91,14 +91,14 @@ describe("App customizer", () => {
 
     const overlayRoot = screen.getByTestId("overlay-root");
 
-    fireEvent.click(screen.getByRole("button", { name: "Kaisei Decol 和風デコ文字" }));
+    fireEvent.click(screen.getByRole("button", { name: "RocknRoll One ポップ太字" }));
 
     await waitFor(() => {
-      expect(overlayRoot.style.getPropertyValue("--overlay-font-family")).toContain("Kaisei Decol");
+      expect(overlayRoot.style.getPropertyValue("--overlay-font-family")).toContain("RocknRoll One");
     });
 
     expect(
-      screen.getByRole("button", { name: "Kaisei Decol 和風デコ文字" }),
+      screen.getByRole("button", { name: "RocknRoll One ポップ太字" }),
     ).toHaveAttribute("aria-pressed", "true");
   });
 
@@ -107,7 +107,7 @@ describe("App customizer", () => {
     render(<App />);
 
     const output = screen.getByLabelText("生成URL") as HTMLTextAreaElement;
-    fireEvent.click(screen.getByRole("button", { name: "Star 星モチーフ" }));
+    fireEvent.click(screen.getByRole("button", { name: "Star" }));
 
     const generatedUrl = output.value;
     expect(generatedUrl).toContain("cfg=");
@@ -137,7 +137,6 @@ describe("App customizer", () => {
     window.history.pushState({}, "", "/?customize=1");
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: "詳細カラーを開く" }));
     fireEvent.change(screen.getByLabelText("ネーム文字コード"), {
       target: { value: "#221122" },
     });
@@ -155,24 +154,10 @@ describe("App customizer", () => {
     fireEvent.change(screen.getByLabelText("メインカラー"), {
       target: { value: "#123456" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Star 星モチーフ" }));
+    fireEvent.click(screen.getByRole("button", { name: "Star" }));
     fireEvent.click(screen.getByRole("button", { name: "デフォルトへ戻す" }));
 
     expect(screen.getByLabelText("メインカラー")).toHaveValue(`#${DEFAULT_OVERLAY_STYLE_CONFIG.c}`);
-  });
-
-  it("shows contrast warnings for unreadable overrides", async () => {
-    window.history.pushState({}, "", "/?customize=1");
-    render(<App />);
-
-    fireEvent.click(screen.getByRole("button", { name: "詳細カラーを開く" }));
-    fireEvent.change(screen.getByLabelText("ネーム文字コード"), {
-      target: { value: "#f9d9de" },
-    });
-
-    expect(
-      await screen.findByText(/読みやすさチェックで 1 件の注意があります。/),
-    ).toBeInTheDocument();
   });
 
   it("selects the generated url when clipboard is unavailable", async () => {

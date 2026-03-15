@@ -17,7 +17,6 @@ import {
   DEFAULT_OVERLAY_STYLE_CONFIG,
   FONT_PRESET_OPTIONS,
   formatAccentColor,
-  getOverlayContrastWarnings,
   normalizeAccentColor,
   type OverlayColorOverrideKey,
   type OverlayStyleConfig,
@@ -65,8 +64,6 @@ const primaryButtonClassName =
   "cursor-pointer rounded-full border border-[var(--customizer-border-accent-soft)] bg-[var(--customizer-primary)] px-4 py-[10px] text-[13px] font-medium text-[var(--customizer-text)] transition-[transform,filter] duration-150 ease-in-out hover:-translate-y-px hover:brightness-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--customizer-focus)] disabled:cursor-not-allowed disabled:opacity-48";
 const inputClassName =
   "w-full rounded-2xl border border-[var(--customizer-border-strong)] bg-[var(--customizer-surface)] px-[14px] py-[13px] text-[var(--customizer-text-body)] outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--customizer-focus-soft)]";
-const statusChipClassName =
-  "inline-flex items-center rounded-full border border-[var(--customizer-border)] bg-[var(--customizer-surface)] px-3 py-[6px] text-[12px] font-medium text-[var(--customizer-text)]";
 
 const CUSTOMIZER_DESKTOP_MEDIA_QUERY = "(min-width: 721px)";
 const CUSTOMIZER_PREVIEW_TOP_OFFSET = 24;
@@ -169,9 +166,6 @@ export function CustomizerPage({
   const [colorCodeInputs, setColorCodeInputs] = useState<ColorCodeInputs>(() =>
     buildColorCodeInputs(initialConfig),
   );
-  const [showAdvancedColors, setShowAdvancedColors] = useState(() =>
-    ADVANCED_COLOR_OPTIONS.some((option) => Boolean(initialConfig[option.key])),
-  );
   const [copyLabel, setCopyLabel] = useState("コピー");
 
   const previewConfig = useDeferredValue(draftConfig);
@@ -186,19 +180,6 @@ export function CustomizerPage({
   const generatedUrl = useMemo(
     () => buildOverlayUrl(appBaseUrl, draftConfig),
     [appBaseUrl, draftConfig],
-  );
-  const selectedFontOption =
-    FONT_PRESET_OPTIONS.find((option) => option.id === draftConfig.f) ??
-    FONT_PRESET_OPTIONS[0];
-  const selectedAvatarOption =
-    AVATAR_PRESET_OPTIONS.find((option) => option.id === draftConfig.a) ??
-    AVATAR_PRESET_OPTIONS[0];
-  const activeOverrideCount = ADVANCED_COLOR_OPTIONS.filter(
-    (option) => draftConfig[option.key],
-  ).length;
-  const contrastWarnings = useMemo(
-    () => getOverlayContrastWarnings(draftConfig),
-    [draftConfig],
   );
 
   useEffect(() => {
@@ -302,7 +283,6 @@ export function CustomizerPage({
       as: undefined,
       dc: undefined,
     }));
-    setShowAdvancedColors(false);
     setCopyLabel("コピー");
   };
 
@@ -310,10 +290,6 @@ export function CustomizerPage({
     const nextColor = normalizeAccentColor(rawColor);
     if (!nextColor) {
       return;
-    }
-
-    if (key !== "c") {
-      setShowAdvancedColors(true);
     }
 
     setDraftConfig((current) => {
@@ -339,31 +315,6 @@ export function CustomizerPage({
           className="flex flex-col gap-5 rounded-[20px] border border-[var(--customizer-border-soft)] p-4 min-[721px]:rounded-[24px] min-[721px]:p-5 min-[1180px]:p-6"
           style={panelStyle}
         >
-          <div className="flex flex-col gap-4 rounded-[20px] border border-[var(--customizer-border)] bg-[var(--customizer-surface)] p-4">
-            <div>
-              <p className="mb-[6px] text-xs font-medium uppercase tracking-[0.16em] text-[var(--customizer-text-accent)]">
-                Overlay Studio
-              </p>
-              <h1 className="m-0 text-[clamp(30px,4vw,42px)] leading-[1.1] text-[var(--customizer-text-heading)]">
-                オーバーレイ調整
-              </h1>
-            </div>
-            <div className="flex flex-wrap gap-[10px]">
-              <span className={statusChipClassName}>
-                フォント: {selectedFontOption?.label ?? draftConfig.f}
-              </span>
-              <span className={statusChipClassName}>
-                アイコン: {selectedAvatarOption?.label ?? draftConfig.a}
-              </span>
-              <span className={statusChipClassName}>
-                アクセント: {colorCodeInputs.c}
-              </span>
-              <span className={statusChipClassName}>
-                詳細カラー {activeOverrideCount} 件
-              </span>
-            </div>
-          </div>
-
           <div className={sectionClassName}>
             <div className={sectionHeadClassName}>
               <h2 className="m-0 text-[17px] font-medium text-[var(--customizer-text-heading)]">
@@ -404,9 +355,6 @@ export function CustomizerPage({
               <h2 className="m-0 text-[17px] font-medium text-[var(--customizer-text-heading)]">
                 メインカラー
               </h2>
-              <p className={helperTextClassName}>
-                装飾・ネームピル・バッジ配色はこの 1 色から自動で組み立てます。
-              </p>
             </div>
             <div className="flex items-center gap-3">
               <input
@@ -462,9 +410,6 @@ export function CustomizerPage({
               <h2 className="m-0 text-[17px] font-medium text-[var(--customizer-text-heading)]">
                 プロフィールアイコン
               </h2>
-              <p className={helperTextClassName}>
-                プリセットを選ぶと、区切りアイコンやサイドマーカーも連動して変わります。
-              </p>
             </div>
             <div
               className="grid grid-cols-1 gap-[10px] min-[1180px]:grid-cols-2"
@@ -496,9 +441,6 @@ export function CustomizerPage({
                   <span className="text-sm font-medium text-[var(--customizer-text)]">
                     {option.label}
                   </span>
-                  <span className={helperTextClassName}>
-                    {option.description}
-                  </span>
                 </button>
               ))}
             </div>
@@ -510,25 +452,8 @@ export function CustomizerPage({
                 <h2 className="m-0 text-[17px] font-medium text-[var(--customizer-text-heading)]">
                   詳細カラー
                 </h2>
-                <p className={helperTextClassName}>
-                  必要な場所だけ個別色にできます。未調整ならメインカラーの派生値を使います。
-                </p>
               </div>
               <div className="flex flex-wrap gap-[10px]">
-                <span className={statusChipClassName}>
-                  {showAdvancedColors ? "詳細表示中" : "簡易表示"}
-                </span>
-                <button
-                  type="button"
-                  className={`${secondaryButtonClassName} min-h-[44px]`}
-                  onClick={() => setShowAdvancedColors((current) => !current)}
-                  aria-expanded={showAdvancedColors}
-                  aria-controls="advanced-color-panel"
-                >
-                  {showAdvancedColors
-                    ? "詳細カラーを閉じる"
-                    : "詳細カラーを開く"}
-                </button>
                 <button
                   type="button"
                   className={`${secondaryButtonClassName} min-h-[44px]`}
@@ -538,83 +463,69 @@ export function CustomizerPage({
                 </button>
               </div>
             </div>
-            {showAdvancedColors ? (
-              <div
-                id="advanced-color-panel"
-                className="grid grid-cols-1 gap-[10px] min-[1180px]:grid-cols-2"
-              >
-                {ADVANCED_COLOR_OPTIONS.map((option) => (
-                  <div
-                    key={option.key}
-                    className="flex flex-col gap-3 rounded-[18px] border border-[var(--customizer-border-soft)] bg-[var(--customizer-surface)] p-[14px]"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex flex-col gap-1">
-                        <h3 className="m-0 text-sm font-medium text-[var(--customizer-text)]">
-                          {option.label}
-                        </h3>
-                        <p className={helperTextClassName}>
-                          {option.description}
-                        </p>
-                      </div>
-                      <span
-                        className="h-8 w-8 shrink-0 rounded-full border border-white/16 shadow-[0_0_0_3px_var(--customizer-swatch-ring-soft)]"
-                        style={{ backgroundColor: colorCodeInputs[option.key] }}
-                      />
+            <div className="grid grid-cols-1 gap-[10px] min-[1180px]:grid-cols-2">
+              {ADVANCED_COLOR_OPTIONS.map((option) => (
+                <div
+                  key={option.key}
+                  className="flex flex-col gap-3 rounded-[18px] border border-[var(--customizer-border-soft)] bg-[var(--customizer-surface)] p-[14px]"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col gap-1">
+                      <h3 className="m-0 text-sm font-medium text-[var(--customizer-text)]">
+                        {option.label}
+                      </h3>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <input
-                        aria-label={`${option.label}カラーピッカー`}
-                        className="h-11 w-[60px] cursor-pointer rounded-[14px] border-none bg-transparent"
-                        type="color"
-                        value={colorCodeInputs[option.key]}
-                        onChange={(event) => {
-                          const nextValue = event.target.value;
-                          setColorCodeInputs((current) => ({
-                            ...current,
-                            [option.key]: nextValue,
-                          }));
-                          onColorFieldChange(option.key, nextValue);
-                        }}
-                      />
-                      <input
-                        aria-label={`${option.label}コード`}
-                        className={`${inputClassName} font-mono text-[14px] tracking-[0.04em]`}
-                        type="text"
-                        inputMode="text"
-                        autoCapitalize="off"
-                        autoComplete="off"
-                        autoCorrect="off"
-                        spellCheck={false}
-                        maxLength={7}
-                        value={colorCodeInputs[option.key]}
-                        onChange={(event) => {
-                          const nextValue = event.target.value;
-                          setColorCodeInputs((current) => ({
-                            ...current,
-                            [option.key]: nextValue,
-                          }));
-                          onColorFieldChange(option.key, nextValue);
-                        }}
-                        onBlur={() => {
-                          setColorCodeInputs((current) => ({
-                            ...current,
-                            [option.key]:
-                              buildColorCodeInputs(draftConfig)[option.key],
-                          }));
-                        }}
-                      />
-                    </div>
+                    <span
+                      className="h-8 w-8 shrink-0 rounded-full border border-white/16 shadow-[0_0_0_3px_var(--customizer-swatch-ring-soft)]"
+                      style={{ backgroundColor: colorCodeInputs[option.key] }}
+                    />
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-[16px] border border-dashed border-[var(--customizer-border-soft)] bg-[var(--customizer-surface)] p-4">
-                <p className={helperTextClassName}>
-                  まずはフォント、メインカラー、アイコンで雰囲気を決めて、必要になったらここを開いて微調整するのがおすすめです。
-                </p>
-              </div>
-            )}
+                  <div className="flex items-center gap-3">
+                    <input
+                      aria-label={`${option.label}カラーピッカー`}
+                      className="h-11 w-[60px] cursor-pointer rounded-[14px] border-none bg-transparent"
+                      type="color"
+                      value={colorCodeInputs[option.key]}
+                      onChange={(event) => {
+                        const nextValue = event.target.value;
+                        setColorCodeInputs((current) => ({
+                          ...current,
+                          [option.key]: nextValue,
+                        }));
+                        onColorFieldChange(option.key, nextValue);
+                      }}
+                    />
+                    <input
+                      aria-label={`${option.label}コード`}
+                      className={`${inputClassName} font-mono text-[14px] tracking-[0.04em]`}
+                      type="text"
+                      inputMode="text"
+                      autoCapitalize="off"
+                      autoComplete="off"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      maxLength={7}
+                      value={colorCodeInputs[option.key]}
+                      onChange={(event) => {
+                        const nextValue = event.target.value;
+                        setColorCodeInputs((current) => ({
+                          ...current,
+                          [option.key]: nextValue,
+                        }));
+                        onColorFieldChange(option.key, nextValue);
+                      }}
+                      onBlur={() => {
+                        setColorCodeInputs((current) => ({
+                          ...current,
+                          [option.key]:
+                            buildColorCodeInputs(draftConfig)[option.key],
+                        }));
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className={sectionClassName}>
@@ -623,28 +534,8 @@ export function CustomizerPage({
                 <h2 className="m-0 text-[17px] font-medium text-[var(--customizer-text-heading)]">
                   OBS 用 URL
                 </h2>
-                <p className={helperTextClassName}>
-                  現在の設定に合わせて自動更新されます。OBS Browser Source
-                  にはこの URL をそのまま貼ります。
-                </p>
               </div>
             </div>
-            {contrastWarnings.length > 0 ? (
-              <div className="rounded-[18px] border border-[var(--customizer-warning-border)] bg-[var(--customizer-warning-bg)] p-4 text-[var(--customizer-warning-text)]">
-                <p className="m-0 text-sm font-medium">
-                  読みやすさチェックで {contrastWarnings.length}{" "}
-                  件の注意があります。
-                </p>
-                <ul className="mt-3 mb-0 flex list-disc flex-col gap-2 pl-5 text-[13px] leading-[1.55] text-[var(--customizer-warning-text-soft)]">
-                  {contrastWarnings.map((warning) => (
-                    <li key={warning.id}>
-                      {warning.label} のコントラスト比が {warning.ratio}:1
-                      です。 目安の {warning.minimum}:1 を下回っています。
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
             <div className="flex flex-wrap gap-[10px]">
               <button
                 type="button"
@@ -676,7 +567,7 @@ export function CustomizerPage({
                 ? "URL をクリップボードにコピーしました。"
                 : copyLabel === "手動コピー"
                   ? "自動コピーできないため、URL を選択しました。Ctrl+C でコピーしてください。"
-                  : "変更は自動反映されます。"}
+                  : ""}
             </p>
           </div>
         </main>

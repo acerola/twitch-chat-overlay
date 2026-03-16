@@ -18,6 +18,7 @@ import {
   FONT_PRESET_OPTIONS,
   formatAccentColor,
   normalizeAccentColor,
+  tryDecodeOverlayStyleConfig,
   type OverlayColorOverrideKey,
   type OverlayStyleConfig,
 } from "../lib/overlay-customization";
@@ -167,6 +168,8 @@ export function CustomizerPage({
     buildColorCodeInputs(initialConfig),
   );
   const [copyLabel, setCopyLabel] = useState("コピー");
+  const [importUrlInput, setImportUrlInput] = useState("");
+  const [importStatus, setImportStatus] = useState("");
 
   const previewConfig = useDeferredValue(draftConfig);
   const avatarPreviewStyle = useMemo(
@@ -284,6 +287,39 @@ export function CustomizerPage({
       dc: undefined,
     }));
     setCopyLabel("コピー");
+  };
+
+  const onImportUrl = () => {
+    const nextUrl = importUrlInput.trim();
+    if (!nextUrl) {
+      setImportStatus("URL を入力してください。");
+      return;
+    }
+
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(nextUrl);
+    } catch {
+      setImportStatus("有効な URL を貼り付けてください。");
+      return;
+    }
+
+    const packedConfig = parsedUrl.searchParams.get("cfg");
+    if (!packedConfig) {
+      setImportStatus("cfg 付きの URL を貼り付けてください。");
+      return;
+    }
+
+    const nextConfig = tryDecodeOverlayStyleConfig(packedConfig);
+    if (!nextConfig) {
+      setImportStatus("URL の設定を読み込めませんでした。");
+      return;
+    }
+
+    setDraftConfig(nextConfig);
+    setImportUrlInput("");
+    setCopyLabel("コピー");
+    setImportStatus("URL の設定を読み込みました。");
   };
 
   const onColorFieldChange = (key: ColorFieldKey, rawColor: string) => {
@@ -536,6 +572,39 @@ export function CustomizerPage({
                 </h2>
               </div>
             </div>
+            <div className="flex flex-col gap-3">
+              <label
+                className="text-sm font-medium text-[var(--customizer-text)]"
+                htmlFor="customizer-import-url"
+              >
+                URL から読み込み
+              </label>
+              <textarea
+                id="customizer-import-url"
+                aria-label="読み込み用URL"
+                className={`${inputClassName} min-h-20 resize-y p-[14px]`}
+                value={importUrlInput}
+                onChange={(event) => {
+                  setImportUrlInput(event.target.value);
+                  setImportStatus("");
+                }}
+                rows={3}
+                placeholder="例: https://example.com/twitch-chat-overlay/?cfg=..."
+              />
+              <div className="flex flex-wrap gap-[10px]">
+                <button
+                  type="button"
+                  className={`${secondaryButtonClassName} min-h-[44px]`}
+                  onClick={onImportUrl}
+                  disabled={!importUrlInput.trim()}
+                >
+                  URL を読み込む
+                </button>
+              </div>
+              <p className={helperTextClassName} aria-live="polite">
+                {importStatus}
+              </p>
+            </div>
             <div className="flex flex-wrap gap-[10px]">
               <button
                 type="button"
@@ -545,14 +614,14 @@ export function CustomizerPage({
               >
                 {copyLabel}
               </button>
-              <button
-                type="button"
-                className={`${secondaryButtonClassName} min-h-[44px]`}
-                onClick={onResetTheme}
-              >
-                デフォルトへ戻す
-              </button>
-            </div>
+                <button
+                  type="button"
+                  className={`${secondaryButtonClassName} min-h-[44px]`}
+                  onClick={onResetTheme}
+                >
+                  デフォルトへ戻す
+                </button>
+              </div>
             <textarea
               ref={generatedUrlRef}
               aria-label="生成URL"

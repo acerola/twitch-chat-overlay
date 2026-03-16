@@ -9,6 +9,7 @@ import {
   encodeOverlayStyleConfig,
   normalizeAccentColor,
   resolveOverlayStyleConfig,
+  tryDecodeOverlayStyleConfig,
 } from "./overlay-customization";
 
 describe("overlay customization", () => {
@@ -34,6 +35,16 @@ describe("overlay customization", () => {
 
   it("falls back to defaults when packed config is invalid", () => {
     expect(decodeOverlayStyleConfig("bad-data")).toEqual(DEFAULT_OVERLAY_STYLE_CONFIG);
+  });
+
+  it("returns null for invalid packed config when strict decoding is requested", () => {
+    expect(tryDecodeOverlayStyleConfig("bad-data")).toBeNull();
+  });
+
+  it("returns null for unsupported versions when strict decoding is requested", () => {
+    const packed = compressToEncodedURIComponent(JSON.stringify({ v: 2, f: "zen", c: "123456", a: "star" }));
+
+    expect(tryDecodeOverlayStyleConfig(packed)).toBeNull();
   });
 
   it("falls back to defaults when packed config has an unsupported version", () => {

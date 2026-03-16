@@ -314,26 +314,30 @@ export function encodeOverlayStyleConfig(config: OverlayStyleConfig): string {
   return compressToEncodedURIComponent(JSON.stringify(resolveOverlayStyleConfig(config)));
 }
 
-export function decodeOverlayStyleConfig(packedConfig: string | null | undefined): OverlayStyleConfig {
+export function tryDecodeOverlayStyleConfig(packedConfig: string | null | undefined): OverlayStyleConfig | null {
   if (!packedConfig) {
-    return DEFAULT_OVERLAY_STYLE_CONFIG;
+    return null;
   }
 
   try {
     const json = decompressFromEncodedURIComponent(packedConfig);
     if (!json) {
-      return DEFAULT_OVERLAY_STYLE_CONFIG;
+      return null;
     }
 
     const parsed = JSON.parse(json);
     if (!isRecord(parsed) || parsed.v !== 1) {
-      return DEFAULT_OVERLAY_STYLE_CONFIG;
+      return null;
     }
 
     return resolveOverlayStyleConfig(parsed);
   } catch {
-    return DEFAULT_OVERLAY_STYLE_CONFIG;
+    return null;
   }
+}
+
+export function decodeOverlayStyleConfig(packedConfig: string | null | undefined): OverlayStyleConfig {
+  return tryDecodeOverlayStyleConfig(packedConfig) ?? DEFAULT_OVERLAY_STYLE_CONFIG;
 }
 
 export function createOverlayStyleVars(config: OverlayStyleConfig): Record<`--${string}`, string> {

@@ -147,6 +147,113 @@ describe("App customizer", () => {
     });
   });
 
+  it("loads settings from a pasted customized url", async () => {
+    const packed = encodeOverlayStyleConfig({
+      v: 1,
+      f: "dotgothic",
+      c: "336699",
+      a: "vampire",
+      nt: "faf7ff",
+    });
+
+    window.history.pushState({}, "", "/?customize=1");
+    render(<App />);
+
+    fireEvent.change(screen.getByLabelText("読み込み用URL"), {
+      target: { value: `https://example.com/twitch-chat-overlay/?cfg=${packed}` },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "URL を読み込む" }));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("メインカラー")).toHaveValue("#336699");
+    });
+
+    expect(
+      screen.getByRole("button", { name: "DotGothic16 レトロドット" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "Vampire Wings" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.getByLabelText("読み込み用URL")).toHaveValue("");
+    expect(screen.getByText("URL の設定を読み込みました。")).toBeInTheDocument();
+  });
+
+  it("loads settings from a pasted customize-page url", async () => {
+    const packed = encodeOverlayStyleConfig({
+      v: 1,
+      f: "klee",
+      c: "7755aa",
+      a: "crescent",
+      mc: "f5efff",
+    });
+
+    window.history.pushState({}, "", "/?customize=1");
+    render(<App />);
+
+    fireEvent.change(screen.getByLabelText("読み込み用URL"), {
+      target: {
+        value: `https://example.com/twitch-chat-overlay/?customize=1&cfg=${packed}`,
+      },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "URL を読み込む" }));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("メインカラー")).toHaveValue("#7755aa");
+    });
+
+    expect(screen.getByRole("button", { name: "Klee One やさしい手書き" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.getByRole("button", { name: "Crescent" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
+  it("shows an import error when the pasted url has no cfg", () => {
+    window.history.pushState({}, "", "/?customize=1");
+    render(<App />);
+
+    fireEvent.change(screen.getByLabelText("読み込み用URL"), {
+      target: { value: "https://example.com/twitch-chat-overlay/" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "URL を読み込む" }));
+
+    expect(
+      screen.getByText("cfg 付きの URL を貼り付けてください。"),
+    ).toBeInTheDocument();
+  });
+
+  it("shows an import error when the pasted value is not a valid url", () => {
+    window.history.pushState({}, "", "/?customize=1");
+    render(<App />);
+
+    fireEvent.change(screen.getByLabelText("読み込み用URL"), {
+      target: { value: "not-a-url" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "URL を読み込む" }));
+
+    expect(
+      screen.getByText("有効な URL を貼り付けてください。"),
+    ).toBeInTheDocument();
+  });
+
+  it("shows an import error when the pasted url has an invalid cfg", () => {
+    window.history.pushState({}, "", "/?customize=1");
+    render(<App />);
+
+    fireEvent.change(screen.getByLabelText("読み込み用URL"), {
+      target: { value: "https://example.com/twitch-chat-overlay/?cfg=bad-data" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "URL を読み込む" }));
+
+    expect(
+      screen.getByText("URL の設定を読み込めませんでした。"),
+    ).toBeInTheDocument();
+  });
+
   it("resets the theme draft back to the default blossom theme", () => {
     window.history.pushState({}, "", "/?customize=1");
     render(<App />);

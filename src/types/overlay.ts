@@ -58,7 +58,9 @@ export type DebugMessageKind =
   | "role_partner"
   | "role_founder"
   | "role_artist"
-  | "role_turbo";
+  | "role_turbo"
+  | "powerup_gigantified"
+  | "powerup_effect";
 
 export type ChatListItem =
   | { type: "alert"; id: string; timestamp: number; alert: OverlayAlert }

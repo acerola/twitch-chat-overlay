@@ -31,6 +31,9 @@ interface DebugMenuProps {
   onAlertSub: () => void;
   onAlertGift: () => void;
   onAlertRaid: () => void;
+  onAlertCelebration: () => void;
+  onAddGigantifiedMessage: () => void;
+  onAddMessageEffect: () => void;
   onStartRandomBenchmark: () => void;
   onStopRandomBenchmark: () => void;
   onResetBlankStats: () => void;
@@ -65,6 +68,9 @@ export function DebugMenu({
   onAlertSub,
   onAlertGift,
   onAlertRaid,
+  onAlertCelebration,
+  onAddGigantifiedMessage,
+  onAddMessageEffect,
   onStartRandomBenchmark,
   onStopRandomBenchmark,
   onResetBlankStats,
@@ -179,6 +185,21 @@ export function DebugMenu({
               </button>
               <button className={DEBUG_BUTTON_CLASSNAME} type="button" onClick={onAlertRaid}>
                 レイド通知
+              </button>
+              <button className={DEBUG_BUTTON_CLASSNAME} type="button" onClick={onAlertCelebration}>
+                セレブレーション
+              </button>
+            </div>
+          </div>
+
+          <div className="debug-section flex flex-col gap-[6px]">
+            <p className="debug-section-title m-0 text-[11px] font-medium text-[#ffe9ef]">Power-ups 検証</p>
+            <div className="debug-grid grid grid-cols-2 gap-[6px]">
+              <button className={DEBUG_BUTTON_CLASSNAME} type="button" onClick={onAddGigantifiedMessage}>
+                巨大エモート
+              </button>
+              <button className={DEBUG_BUTTON_CLASSNAME} type="button" onClick={onAddMessageEffect}>
+                メッセージ効果
               </button>
             </div>
           </div>

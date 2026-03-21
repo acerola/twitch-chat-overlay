@@ -53,6 +53,8 @@ export function useOverlayData({ channel, testMode }: UseOverlayDataOptions): Us
     role_founder: 1,
     role_artist: 1,
     role_turbo: 1,
+    powerup_gigantified: 1,
+    powerup_effect: 1,
   });
 
   const addAlert = useCallback((text: string, kind: OverlayAlert["kind"] = "default") => {

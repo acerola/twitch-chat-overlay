@@ -130,21 +130,30 @@ function CrescentBadge() {
 function StarBadge() {
   return (
     <>
-      <circle cx="32" cy="32" r="14.5" fill="var(--avatar-accent-5)" opacity="0.28" />
+      {/* Glow rings (burst on enter, then subtle) */}
+      <circle className="star-glow" cx="32" cy="32" r="22" fill="var(--avatar-accent-2)" opacity="0" />
+      <circle className="star-glow-inner" cx="32" cy="32" r="17" fill="var(--avatar-accent-4)" opacity="0" />
+      {/* Outer star */}
       <path
         fill="var(--avatar-accent-2)"
         d="M32 16.2l3.9 9.8 10.5 2.2-8.2 6.9 1 10.7L32 40.4l-7.2 5.4 1-10.7-8.2-6.9 10.5-2.2 3.9-9.8z"
       />
+      {/* Inner star */}
       <path
         fill="var(--avatar-accent-4)"
         d="M32 20.7l2.7 6.8 7.4 1.6-5.7 4.9 0.7 7.4-5.1-3.8-5 3.8 0.7-7.4-5.7-4.9 7.3-1.6 2.7-6.8z"
       />
-      <circle cx="32" cy="32" r="3.4" fill="#ffffff" />
-      <g fill="#ffffff" opacity="0.9">
-        <circle cx="14.5" cy="18.5" r="1.5" />
-        <circle cx="48.4" cy="19.7" r="1.2" />
-        <circle cx="17.8" cy="45.1" r="1.1" />
-        <circle cx="47.2" cy="44.2" r="1.4" />
+      {/* Glowing center */}
+      <circle cx="32" cy="32" r="3.8" fill="#ffffff" opacity="0.95" />
+      <circle cx="32" cy="32" r="2.4" fill="#fff8fc" />
+      {/* Cross-shaped sparkles */}
+      <g>
+        <path className="star-sparkle-1" fill="#ffffff" d="M15 17l0.8-2.2 0.8 2.2 2.2 0.8-2.2 0.8-0.8 2.2-0.8-2.2-2.2-0.8z" />
+        <path className="star-sparkle-2" fill="#ffffff" d="M48 18l0.6-1.6 0.6 1.6 1.6 0.6-1.6 0.6-0.6 1.6-0.6-1.6-1.6-0.6z" />
+        <path className="star-sparkle-3" fill="#ffffff" d="M12 38l0.5-1.3 0.5 1.3 1.3 0.5-1.3 0.5-0.5 1.3-0.5-1.3-1.3-0.5z" />
+        <path className="star-sparkle-4" fill="#ffffff" d="M50 42l0.7-1.8 0.7 1.8 1.8 0.7-1.8 0.7-0.7 1.8-0.7-1.8-1.8-0.7z" />
+        <path className="star-sparkle-5" fill="#ffffff" d="M18 48l0.5-1.4 0.5 1.4 1.4 0.5-1.4 0.5-0.5 1.4-0.5-1.4-1.4-0.5z" />
+        <path className="star-sparkle-6" fill="#ffffff" d="M46 13l0.4-1.1 0.4 1.1 1.1 0.4-1.1 0.4-0.4 1.1-0.4-1.1-1.1-0.4z" />
       </g>
     </>
   );

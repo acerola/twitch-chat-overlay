@@ -40,10 +40,12 @@ Example `.env`:
 ```env
 VITE_CHANNEL_NAME=your_channel_name
 VITE_DEBUG_MODE=0
+VITE_TWITCH_CLIENT_ID=
 ```
 
-- `VITE_CHANNEL_NAME`: Twitch channel name (required for production)
+- `VITE_CHANNEL_NAME`: Twitch channel name (required for production, can also use `?channel=` URL param)
 - `VITE_DEBUG_MODE`: `1` to enable debug UI, `0` to disable
+- `VITE_TWITCH_CLIENT_ID`: Twitch application client ID (optional — enables EventSub power-ups like gigantified emotes and celebrations)
 
 ### 3) Start development server
 

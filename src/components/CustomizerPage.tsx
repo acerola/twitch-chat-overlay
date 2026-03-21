@@ -22,6 +22,17 @@ import {
   type OverlayColorOverrideKey,
   type OverlayStyleConfig,
 } from "../lib/overlay-customization";
+import {
+  buildAuthUrl,
+  clearToken,
+  generateCodeChallenge,
+  generateCodeVerifier,
+  getStoredToken,
+  isTokenExpired,
+  storeOAuthState,
+  storeVerifier,
+} from "../lib/twitch-auth";
+import { resolveChannel } from "../overlay-utils";
 
 interface CustomizerPageProps {
   appBaseUrl: string;
@@ -167,6 +178,16 @@ export function CustomizerPage({
   const [colorCodeInputs, setColorCodeInputs] = useState<ColorCodeInputs>(() =>
     buildColorCodeInputs(initialConfig),
   );
+  const [channelName, setChannelName] = useState(() =>
+    resolveChannel(
+      new URL(window.location.href).searchParams.get("channel"),
+      import.meta.env.VITE_CHANNEL_NAME ?? null,
+    ) ?? "",
+  );
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const token = getStoredToken();
+    return token !== null && !isTokenExpired(token);
+  });
   const [copyLabel, setCopyLabel] = useState("コピー");
   const [importUrlInput, setImportUrlInput] = useState("");
   const [importStatus, setImportStatus] = useState("");
@@ -181,8 +202,8 @@ export function CustomizerPage({
     [appBaseUrl],
   );
   const generatedUrl = useMemo(
-    () => buildOverlayUrl(appBaseUrl, draftConfig),
-    [appBaseUrl, draftConfig],
+    () => buildOverlayUrl(appBaseUrl, draftConfig, channelName || null),
+    [appBaseUrl, draftConfig, channelName],
   );
 
   useEffect(() => {
@@ -272,6 +293,37 @@ export function CustomizerPage({
   const onResetTheme = () => {
     setDraftConfig(DEFAULT_OVERLAY_STYLE_CONFIG);
     setCopyLabel("コピー");
+  };
+
+  const clientId = import.meta.env.VITE_TWITCH_CLIENT_ID;
+
+  const onConnectTwitch = async () => {
+    if (!clientId) return;
+
+    const verifier = generateCodeVerifier();
+    const challenge = await generateCodeChallenge(verifier);
+    const state = crypto.randomUUID();
+
+    storeVerifier(verifier);
+    storeOAuthState(state);
+
+    const redirectUri = new URL(appBaseUrl);
+    redirectUri.search = "";
+    redirectUri.searchParams.set("customize", "1");
+
+    const authUrl = buildAuthUrl({
+      clientId,
+      redirectUri: redirectUri.toString(),
+      codeChallenge: challenge,
+      state,
+    });
+
+    window.location.assign(authUrl);
+  };
+
+  const onDisconnectTwitch = () => {
+    clearToken();
+    setIsAuthenticated(false);
   };
 
   const onResetColorOverrides = () => {
@@ -561,6 +613,68 @@ export function CustomizerPage({
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+
+          <div className={sectionClassName}>
+            <div className={sectionHeadClassName}>
+              <h2 className="m-0 text-[17px] font-medium text-[var(--customizer-text-heading)]">
+                チャンネル &amp; Twitch 接続
+              </h2>
+            </div>
+            <div className="flex flex-col gap-2">
+              <label
+                className="text-sm font-medium text-[var(--customizer-text)]"
+                htmlFor="customizer-channel-name"
+              >
+                チャンネル名
+              </label>
+              <input
+                id="customizer-channel-name"
+                aria-label="チャンネル名"
+                className={inputClassName}
+                type="text"
+                inputMode="text"
+                autoCapitalize="off"
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
+                value={channelName}
+                placeholder="例: your_twitch_channel"
+                onChange={(event) => setChannelName(event.target.value.trim().toLowerCase())}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <p className={helperTextClassName}>
+                {isAuthenticated
+                  ? "Twitch に接続済みです。"
+                  : "Twitch に未接続です。"}
+              </p>
+              <div className="flex flex-wrap gap-[10px]">
+                {clientId ? (
+                  isAuthenticated ? (
+                    <button
+                      type="button"
+                      className={`${secondaryButtonClassName} min-h-[44px]`}
+                      onClick={onDisconnectTwitch}
+                    >
+                      切断
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className={`${primaryButtonClassName} min-h-[44px]`}
+                      onClick={onConnectTwitch}
+                    >
+                      Twitch に接続
+                    </button>
+                  )
+                ) : (
+                  <p className={helperTextClassName}>
+                    Power-ups を使うには VITE_TWITCH_CLIENT_ID の設定が必要です
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 

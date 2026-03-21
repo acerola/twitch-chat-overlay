@@ -424,9 +424,16 @@ export function getOverlayContrastWarnings(config: OverlayStyleConfig): OverlayC
   });
 }
 
-export function buildOverlayUrl(appBaseUrl: string, config: OverlayStyleConfig): string {
+export function buildOverlayUrl(
+  appBaseUrl: string,
+  config: OverlayStyleConfig,
+  channel?: string | null,
+): string {
   const url = new URL(appBaseUrl);
   url.search = "";
+  if (channel) {
+    url.searchParams.set("channel", channel);
+  }
   url.searchParams.set("cfg", encodeOverlayStyleConfig(config));
   return url.toString();
 }

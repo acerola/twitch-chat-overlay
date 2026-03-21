@@ -19,6 +19,17 @@ export function normalizeChannel(rawChannel: string | null): string | null {
   return trimmed;
 }
 
+export function resolveChannel(
+  urlParam: string | null,
+  envVar: string | null,
+): string | null {
+  const fromParam = normalizeChannel(urlParam);
+  if (fromParam) {
+    return fromParam;
+  }
+  return normalizeChannel(envVar);
+}
+
 export function parseMessageWithEmotes(text: string, emotes: Record<string, string[]>): MessageSegment[] {
   if (!emotes || Object.keys(emotes).length === 0) {
     return [{ type: "text", value: text }];

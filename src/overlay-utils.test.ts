@@ -5,6 +5,7 @@ import {
   makeAlertText,
   normalizeChannel,
   parseMessageWithEmotes,
+  resolveChannel,
 } from "./overlay-utils";
 
 describe("overlay-utils", () => {
@@ -99,5 +100,26 @@ describe("overlay-utils", () => {
 
   it("keeps alert text as-is", () => {
     expect(makeAlertText("デバッグユーザーが 500 ビッツ応援")).toBe("デバッグユーザーが 500 ビッツ応援");
+  });
+});
+
+describe("resolveChannel", () => {
+  it("returns URL param when provided", () => {
+    expect(resolveChannel("streamername", "envname")).toBe("streamername");
+  });
+  it("falls back to env var when URL param is null", () => {
+    expect(resolveChannel(null, "envname")).toBe("envname");
+  });
+  it("falls back to env var when URL param is empty", () => {
+    expect(resolveChannel("", "envname")).toBe("envname");
+  });
+  it("returns null when both are null", () => {
+    expect(resolveChannel(null, null)).toBeNull();
+  });
+  it("normalizes the URL param", () => {
+    expect(resolveChannel("  StreamerName  ", null)).toBe("streamername");
+  });
+  it("rejects invalid channel names from URL param and falls back", () => {
+    expect(resolveChannel("ab", "envname")).toBe("envname");
   });
 });

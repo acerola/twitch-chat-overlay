@@ -5,7 +5,7 @@ import {
   buildCustomizerUrl,
   decodeOverlayStyleConfig,
 } from "./lib/overlay-customization";
-import { normalizeChannel } from "./overlay-utils";
+import { resolveChannel } from "./overlay-utils";
 
 export function App() {
   const url = useMemo(() => new URL(window.location.href), []);
@@ -14,7 +14,10 @@ export function App() {
   const customizeMode = url.searchParams.get("customize") === "1";
   const testMode = url.searchParams.get("test") === "1";
   const debugMode = resolveDebugMode();
-  const overlayChannel = normalizeChannel(import.meta.env.VITE_CHANNEL_NAME ?? null);
+  const overlayChannel = resolveChannel(
+    url.searchParams.get("channel"),
+    import.meta.env.VITE_CHANNEL_NAME ?? null,
+  );
   const styleConfig = useMemo(
     () => decodeOverlayStyleConfig(url.searchParams.get("cfg")),
     [url],

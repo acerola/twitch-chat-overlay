@@ -405,6 +405,9 @@ export function OverlayScreen({
           onAlertSub={() => addAlert("デバッグユーザーがサブスクしました", "subscribe")}
           onAlertGift={() => addAlert("デバッグユーザーが ViewerX さんへギフトサブ", "gift")}
           onAlertRaid={() => addAlert("デバッグユーザーが 77 人でレイド", "raid")}
+          onAlertCelebration={() => addAlert("デバッグユーザーが 300 ビッツでセレブレーション", "celebration")}
+          onAddGigantifiedMessage={() => addDebugMessage("powerup_gigantified")}
+          onAddMessageEffect={() => addDebugMessage("powerup_effect")}
           onStartRandomBenchmark={startRandomBenchmark}
           onStopRandomBenchmark={stopRandomBenchmark}
           onResetBlankStats={resetBlankStats}

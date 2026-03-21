@@ -25,6 +25,7 @@ jobs:
         env:
           VITE_CHANNEL_NAME: ${{ vars.VITE_CHANNEL_NAME }}
           VITE_DEBUG_MODE: ${{ vars.VITE_DEBUG_MODE }}
+          VITE_TWITCH_CLIENT_ID: ${{ vars.VITE_TWITCH_CLIENT_ID }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

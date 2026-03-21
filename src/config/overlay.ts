@@ -179,4 +179,20 @@ export const DEBUG_CHAT_FIXTURES: Record<DebugMessageKind, DebugChatFixture> = {
     badges: { turbo: "1" },
     emotes: {},
   },
+  powerup_gigantified: {
+    username: "PowerUpUser",
+    text: "LUL",
+    color: "#ff9900",
+    badges: {},
+    emotes: { "425618": ["0-2"] },
+    powerUp: "gigantified_emote",
+  },
+  powerup_effect: {
+    username: "EffectUser",
+    text: "すごい配信！",
+    color: "#00ccff",
+    badges: {},
+    emotes: {},
+    powerUp: "message_effect",
+  },
 };

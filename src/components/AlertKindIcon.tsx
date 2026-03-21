@@ -44,5 +44,14 @@ export function AlertKindIcon({ kind, className, preset = "blossom" }: AlertKind
     );
   }
 
+  if (kind === "celebration") {
+    return (
+      <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 3l1.4 3.6 3.9.8-3 2.5.4 4L12 11.6 9.3 13.9l.4-4-3-2.5 3.9-.8L12 3z" />
+        <path d="M5.8 14.2l-.6 2.4m13.6-2.4l.6 2.4M8 18.5l-1.2 2m9.4-2l1.2 2M12 17.8v2.8" fill="none" />
+      </svg>
+    );
+  }
+
   return <DividerIcon preset={preset} className={className} />;
 }

@@ -1,6 +1,6 @@
-import type { BadgeKind, BadgeMap, ChatListItem, ChatMessage, DebugChatFixture, MessageSegment, OverlayAlert } from "./types/overlay";
+import type { BadgeKind, BadgeMap, ChatListItem, ChatMessage, DebugChatFixture, MessageSegment, OverlayAlert, PowerUpKind } from "./types/overlay";
 
-export type { BadgeKind, BadgeMap, ChatListItem, ChatMessage, DebugChatFixture, MessageSegment, OverlayAlert };
+export type { BadgeKind, BadgeMap, ChatListItem, ChatMessage, DebugChatFixture, MessageSegment, OverlayAlert, PowerUpKind };
 
 export function createOverlayId(): string {
   return `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
@@ -17,6 +17,17 @@ export function normalizeChannel(rawChannel: string | null): string | null {
   }
 
   return trimmed;
+}
+
+export function resolveChannel(
+  urlParam: string | null,
+  envVar: string | null,
+): string | null {
+  const fromParam = normalizeChannel(urlParam);
+  if (fromParam) {
+    return fromParam;
+  }
+  return normalizeChannel(envVar);
 }
 
 export function parseMessageWithEmotes(text: string, emotes: Record<string, string[]>): MessageSegment[] {

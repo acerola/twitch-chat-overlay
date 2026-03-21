@@ -102,7 +102,7 @@ describe("App customizer", () => {
     ).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("keeps the OBS URL in sync without channel and debug params", () => {
+  it("keeps the OBS URL in sync with channel but without debug params", () => {
     window.history.pushState({}, "", "/?customize=1");
     render(<App />);
 
@@ -111,10 +111,22 @@ describe("App customizer", () => {
 
     const generatedUrl = output.value;
     expect(generatedUrl).toContain("cfg=");
-    expect(generatedUrl).not.toContain("channel=");
+    expect(generatedUrl).toContain("channel=test_channel");
     expect(generatedUrl).not.toContain("debug=");
     expect(generatedUrl).not.toContain("test=");
     expect(generatedUrl).not.toContain("customize=");
+  });
+
+  it("omits channel= from OBS URL when channel name is empty", () => {
+    vi.stubEnv("VITE_CHANNEL_NAME", "");
+    window.history.pushState({}, "", "/?customize=1");
+    render(<App />);
+
+    const output = screen.getByLabelText("生成URL") as HTMLTextAreaElement;
+
+    const generatedUrl = output.value;
+    expect(generatedUrl).toContain("cfg=");
+    expect(generatedUrl).not.toContain("channel=");
   });
 
   it("accepts manual hex color input and syncs the embedded preview state", async () => {

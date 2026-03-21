@@ -97,10 +97,11 @@ function fragmentsToEmotes(fragments: EventSubFragment[]): Record<string, string
       const end = cursor + textLen - 1;
       const position = `${start}-${end}`;
 
-      if (!emotes[fragment.emote.id]) {
-        emotes[fragment.emote.id] = [];
+      const id = fragment.emote.id;
+      if (!emotes[id]) {
+        emotes[id] = [];
       }
-      emotes[fragment.emote.id].push(position);
+      emotes[id]!.push(position);
     }
 
     cursor += textLen;

@@ -7,10 +7,16 @@ import {
 } from "./lib/overlay-customization";
 import {
   clearOAuthState,
+  clearToken,
   clearVerifier,
   exchangeCodeForToken,
+  fetchTwitchUserId,
+  fetchTwitchUserIdByLogin,
   getStoredOAuthState,
+  getStoredToken,
   getStoredVerifier,
+  isTokenExpired,
+  refreshAccessToken,
   storeToken,
 } from "./lib/twitch-auth";
 import { resolveChannel } from "./overlay-utils";
@@ -19,6 +25,12 @@ export function App() {
   const url = useMemo(() => new URL(window.location.href), []);
   const appBaseUrl = useMemo(() => new URL(import.meta.env.BASE_URL, window.location.origin).toString(), []);
   const [oauthProcessing, setOauthProcessing] = useState(false);
+  const [twitchAuth, setTwitchAuth] = useState<{
+    accessToken: string;
+    clientId: string;
+    broadcasterId: string;
+    userId: string;
+  } | null>(null);
 
   const customizeMode = url.searchParams.get("customize") === "1";
   const testMode = url.searchParams.get("test") === "1";
@@ -87,6 +99,39 @@ export function App() {
       });
   }, [url, appBaseUrl]);
 
+  useEffect(() => {
+    const clientId = import.meta.env.VITE_TWITCH_CLIENT_ID;
+    if (!clientId || !overlayChannel) return;
+
+    let cancelled = false;
+
+    async function resolve() {
+      let token = getStoredToken();
+      if (!token) return;
+
+      if (isTokenExpired(token)) {
+        try {
+          token = await refreshAccessToken({ clientId: clientId!, refreshToken: token.refreshToken });
+          storeToken(token);
+        } catch {
+          clearToken();
+          return;
+        }
+      }
+
+      const me = await fetchTwitchUserId(token.accessToken, clientId!);
+      if (!me || cancelled) return;
+
+      const broadcasterId = await fetchTwitchUserIdByLogin(token.accessToken, clientId!, overlayChannel!);
+      if (!broadcasterId || cancelled) return;
+
+      setTwitchAuth({ accessToken: token.accessToken, clientId: clientId!, broadcasterId, userId: me.userId });
+    }
+
+    void resolve();
+    return () => { cancelled = true; };
+  }, [overlayChannel]);
+
   if (oauthProcessing) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh" }}>
@@ -106,6 +151,7 @@ export function App() {
       debugMode={debugMode}
       testMode={testMode}
       styleConfig={styleConfig}
+      twitchAuth={twitchAuth}
     />
   );
 }

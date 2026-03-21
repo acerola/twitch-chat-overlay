@@ -5,6 +5,7 @@ import { DebugMenu } from "./DebugMenu";
 import { SetupHint } from "./SetupHint";
 import { buildFeedItems, parseEnvBoolean } from "../lib/overlay-runtime";
 import { createOverlayStyleVars, type OverlayStyleConfig } from "../lib/overlay-customization";
+import { useEventSubData } from "../hooks/useEventSubData";
 import { useOverlayData } from "../hooks/useOverlayData";
 import type { DebugMessageKind, OverlayAlert } from "../types/overlay";
 
@@ -56,6 +57,12 @@ interface OverlayScreenProps {
   testMode: boolean;
   styleConfig: OverlayStyleConfig;
   embeddedPreview?: boolean;
+  twitchAuth?: {
+    accessToken: string;
+    clientId: string;
+    broadcasterId: string;
+    userId: string;
+  } | null;
 }
 
 const EMPTY_BLANK_SPACE_STATS: BlankSpaceStats = {
@@ -99,11 +106,23 @@ export function OverlayScreen({
   testMode,
   styleConfig,
   embeddedPreview = false,
+  twitchAuth,
 }: OverlayScreenProps) {
-  const { messages, alerts, addAlert, addDebugMessage, clearAllOverlayData, trimFeedEntries } = useOverlayData({
-    channel,
+  // Both hooks are always called (React rules — can't conditionally call hooks).
+  // When EventSub is active, TMI channel is nulled out so it does nothing.
+  const tmiData = useOverlayData({
+    channel: twitchAuth ? null : channel,
     testMode,
   });
+
+  const eventSubData = useEventSubData(
+    twitchAuth ?? { accessToken: "", clientId: "", broadcasterId: "", userId: "" },
+  );
+
+  // Use EventSub data when authenticated, otherwise TMI
+  const messages = twitchAuth ? eventSubData.messages : tmiData.messages;
+  const alerts = twitchAuth ? eventSubData.alerts : tmiData.alerts;
+  const { addAlert, addDebugMessage, clearAllOverlayData, trimFeedEntries } = tmiData;
 
   const chatListItems = useMemo(() => buildFeedItems(messages, alerts), [messages, alerts]);
   const messageStackRef = useRef<HTMLDivElement | null>(null);

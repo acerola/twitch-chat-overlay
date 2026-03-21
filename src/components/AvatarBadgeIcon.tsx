@@ -133,19 +133,22 @@ function StarBadge() {
       {/* Glow rings (burst on enter, then subtle) */}
       <circle className="star-glow" cx="32" cy="32" r="22" fill="var(--avatar-accent-2)" opacity="0" />
       <circle className="star-glow-inner" cx="32" cy="32" r="17" fill="var(--avatar-accent-4)" opacity="0" />
-      {/* Outer star */}
-      <path
-        fill="var(--avatar-accent-2)"
-        d="M32 16.2l3.9 9.8 10.5 2.2-8.2 6.9 1 10.7L32 40.4l-7.2 5.4 1-10.7-8.2-6.9 10.5-2.2 3.9-9.8z"
-      />
-      {/* Inner star */}
-      <path
-        fill="var(--avatar-accent-4)"
-        d="M32 20.7l2.7 6.8 7.4 1.6-5.7 4.9 0.7 7.4-5.1-3.8-5 3.8 0.7-7.4-5.7-4.9 7.3-1.6 2.7-6.8z"
-      />
-      {/* Glowing center */}
-      <circle cx="32" cy="32" r="3.8" fill="#ffffff" opacity="0.95" />
-      <circle cx="32" cy="32" r="2.4" fill="#fff8fc" />
+      {/* Faceted star — 10 triangular facets from center to vertices */}
+      {/* Top point */}
+      <path fill="var(--avatar-accent-1)" d="M32 32 L27.9 26.3 L32 16 Z" />
+      <path fill="var(--avatar-accent-2)" d="M32 32 L32 16 L36.1 26.3 Z" />
+      {/* Upper-right point */}
+      <path fill="var(--avatar-accent-3)" d="M32 32 L36.1 26.3 L47.2 27.1 Z" />
+      <path fill="var(--avatar-accent-4)" d="M32 32 L47.2 27.1 L38.7 34.2 Z" />
+      {/* Lower-right point */}
+      <path fill="var(--avatar-accent-2)" d="M32 32 L38.7 34.2 L41.4 44.9 Z" />
+      <path fill="var(--avatar-accent-4)" d="M32 32 L41.4 44.9 L32 39 Z" />
+      {/* Lower-left point */}
+      <path fill="var(--avatar-accent-3)" d="M32 32 L32 39 L22.6 44.9 Z" />
+      <path fill="var(--avatar-accent-2)" d="M32 32 L22.6 44.9 L25.3 34.2 Z" />
+      {/* Upper-left point */}
+      <path fill="var(--avatar-accent-1)" d="M32 32 L25.3 34.2 L16.8 27.1 Z" />
+      <path fill="var(--avatar-accent-1)" d="M32 32 L16.8 27.1 L27.9 26.3 Z" />
       {/* Cross-shaped sparkles */}
       <g>
         <path className="star-sparkle-1" fill="#ffffff" d="M15 17l0.8-2.2 0.8 2.2 2.2 0.8-2.2 0.8-0.8 2.2-0.8-2.2-2.2-0.8z" />

@@ -13,7 +13,9 @@ export type BadgeKind =
   | "artist"
   | "turbo";
 
-export type AlertKind = "cheer" | "subscribe" | "gift" | "raid" | "default";
+export type PowerUpKind = "gigantified_emote" | "message_effect";
+
+export type AlertKind = "cheer" | "subscribe" | "gift" | "raid" | "celebration" | "default";
 
 export interface ChatMessage {
   id: string;
@@ -23,6 +25,7 @@ export interface ChatMessage {
   badges: BadgeMap;
   emotes: Record<string, string[]>;
   timestamp: number;
+  powerUp?: PowerUpKind;
 }
 
 export interface OverlayAlert {

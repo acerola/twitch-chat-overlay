@@ -1,6 +1,6 @@
-import type { BadgeKind, BadgeMap, ChatListItem, ChatMessage, DebugChatFixture, MessageSegment, OverlayAlert } from "./types/overlay";
+import type { BadgeKind, BadgeMap, ChatListItem, ChatMessage, DebugChatFixture, MessageSegment, OverlayAlert, PowerUpKind } from "./types/overlay";
 
-export type { BadgeKind, BadgeMap, ChatListItem, ChatMessage, DebugChatFixture, MessageSegment, OverlayAlert };
+export type { BadgeKind, BadgeMap, ChatListItem, ChatMessage, DebugChatFixture, MessageSegment, OverlayAlert, PowerUpKind };
 
 export function createOverlayId(): string {
   return `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;

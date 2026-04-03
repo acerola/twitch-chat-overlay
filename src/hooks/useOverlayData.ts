@@ -199,8 +199,9 @@ export function useOverlayData({ channel, testMode }: UseOverlayDataOptions): Us
       addAlert(`${username} さんがサブスクしました`, "subscribe");
     });
 
-    client.on("resub", (_channel, username, months) => {
-      addAlert(`${username} さんが再サブスク（${months} か月）`, "subscribe");
+    client.on("resub", (_channel, username, _streakMonths, _message, userstate) => {
+      const cumulativeMonths = Number(userstate["msg-param-cumulative-months"]) || 0;
+      addAlert(`${username} さんが再サブスク（${cumulativeMonths} か月）`, "subscribe");
     });
 
     client.on("subgift", (_channel, username, _streakMonths, recipient) => {

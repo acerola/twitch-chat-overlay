@@ -403,6 +403,7 @@ export function OverlayScreen({
           onAddRoleTurboMessage={() => addDebugMessage("role_turbo")}
           onAlertCheer={() => addAlert("デバッグユーザーが 500 ビッツ応援", "cheer")}
           onAlertSub={() => addAlert("デバッグユーザーがサブスクしました", "subscribe")}
+          onAlertResub={() => addAlert("デバッグユーザーが再サブスク（12 か月）", "subscribe")}
           onAlertGift={() => addAlert("デバッグユーザーが ViewerX さんへギフトサブ", "gift")}
           onAlertRaid={() => addAlert("デバッグユーザーが 77 人でレイド", "raid")}
           onAlertCelebration={() => addAlert("デバッグユーザーが 300 ビッツでセレブレーション", "celebration")}

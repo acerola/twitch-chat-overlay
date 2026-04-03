@@ -29,6 +29,7 @@ interface DebugMenuProps {
   onAddRoleTurboMessage: () => void;
   onAlertCheer: () => void;
   onAlertSub: () => void;
+  onAlertResub: () => void;
   onAlertGift: () => void;
   onAlertRaid: () => void;
   onAlertCelebration: () => void;
@@ -66,6 +67,7 @@ export function DebugMenu({
   onAddRoleTurboMessage,
   onAlertCheer,
   onAlertSub,
+  onAlertResub,
   onAlertGift,
   onAlertRaid,
   onAlertCelebration,
@@ -179,6 +181,9 @@ export function DebugMenu({
               </button>
               <button className={DEBUG_BUTTON_CLASSNAME} type="button" onClick={onAlertSub}>
                 サブ通知
+              </button>
+              <button className={DEBUG_BUTTON_CLASSNAME} type="button" onClick={onAlertResub}>
+                再サブ通知
               </button>
               <button className={DEBUG_BUTTON_CLASSNAME} type="button" onClick={onAlertGift}>
                 ギフト通知

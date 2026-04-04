@@ -3,7 +3,7 @@ import { ChatAlertItem } from "./ChatAlertItem";
 import { ChatMessageItem } from "./ChatMessageItem";
 import { DebugMenu } from "./DebugMenu";
 import { SetupHint } from "./SetupHint";
-import { buildFeedItems, parseEnvBoolean } from "../lib/overlay-runtime";
+import { buildFeedItems } from "../lib/overlay-runtime";
 import { createOverlayStyleVars, type OverlayStyleConfig } from "../lib/overlay-customization";
 import { useEventSubData } from "../hooks/useEventSubData";
 import { useOverlayData } from "../hooks/useOverlayData";
@@ -490,7 +490,3 @@ export function OverlayScreen({
   );
 }
 
-export function resolveDebugMode(): boolean {
-  const envDebugMode = parseEnvBoolean(import.meta.env.VITE_DEBUG_MODE);
-  return envDebugMode;
-}

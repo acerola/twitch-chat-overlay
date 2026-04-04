@@ -29,6 +29,37 @@ export function parseEnvBoolean(value: string | undefined): boolean {
   return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on";
 }
 
+const CUSTOMIZER_PREVIEW_TOP_OFFSET = 24;
+
+export function resolveDebugMode(): boolean {
+  return parseEnvBoolean(import.meta.env.VITE_DEBUG_MODE);
+}
+
+export function getCustomizerPreviewOffset({
+  containerTop,
+  containerHeight,
+  panelHeight,
+  topOffset = CUSTOMIZER_PREVIEW_TOP_OFFSET,
+}: {
+  containerTop: number;
+  containerHeight: number;
+  panelHeight: number;
+  topOffset?: number;
+}): number {
+  if (
+    containerHeight <= 0 ||
+    panelHeight <= 0 ||
+    panelHeight >= containerHeight
+  ) {
+    return 0;
+  }
+
+  const desiredOffset = topOffset - containerTop;
+  const maxOffset = containerHeight - panelHeight;
+
+  return Math.min(Math.max(desiredOffset, 0), maxOffset);
+}
+
 export function buildFeedItems(messages: ChatMessage[], alerts: OverlayAlert[]): ChatListItem[] {
   const alertItems: ChatListItem[] = alerts.map((alert) => ({
     type: "alert",

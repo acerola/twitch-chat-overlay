@@ -9,6 +9,7 @@ import {
 } from "react";
 import { AvatarBadgeIcon } from "./AvatarBadgeIcon";
 import { OverlayScreen } from "./OverlayScreen";
+import { getCustomizerPreviewOffset } from "../lib/overlay-runtime";
 import {
   AVATAR_PRESET_OPTIONS,
   buildCustomizerUrl,
@@ -75,7 +76,6 @@ const inputClassName =
   "w-full rounded-2xl border border-[var(--customizer-border-strong)] bg-[var(--customizer-surface)] px-[14px] py-[13px] text-[var(--customizer-text-body)] outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--customizer-focus-soft)]";
 
 const CUSTOMIZER_DESKTOP_MEDIA_QUERY = "(min-width: 721px)";
-const CUSTOMIZER_PREVIEW_TOP_OFFSET = 24;
 
 type ColorFieldKey = "c" | OverlayColorOverrideKey;
 type ColorCodeInputs = Record<ColorFieldKey, string>;
@@ -138,30 +138,6 @@ function getAvatarChoiceClassName(selected: boolean): string {
   return `${choiceBaseClassName} grid justify-items-start gap-2 px-3 py-[14px]${selected ? ` ${selectedChoiceClassName}` : ""}`;
 }
 
-export function getCustomizerPreviewOffset({
-  containerTop,
-  containerHeight,
-  panelHeight,
-  topOffset = CUSTOMIZER_PREVIEW_TOP_OFFSET,
-}: {
-  containerTop: number;
-  containerHeight: number;
-  panelHeight: number;
-  topOffset?: number;
-}): number {
-  if (
-    containerHeight <= 0 ||
-    panelHeight <= 0 ||
-    panelHeight >= containerHeight
-  ) {
-    return 0;
-  }
-
-  const desiredOffset = topOffset - containerTop;
-  const maxOffset = containerHeight - panelHeight;
-
-  return Math.min(Math.max(desiredOffset, 0), maxOffset);
-}
 
 export function CustomizerPage({
   appBaseUrl,

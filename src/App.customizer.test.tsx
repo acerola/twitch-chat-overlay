@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
-import { getCustomizerPreviewOffset } from "./components/CustomizerPage";
+import { getCustomizerPreviewOffset } from "./lib/overlay-runtime";
 import {
   DEFAULT_OVERLAY_STYLE_CONFIG,
   encodeOverlayStyleConfig,

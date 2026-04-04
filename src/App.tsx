@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CustomizerPage } from "./components/CustomizerPage";
-import { OverlayScreen, resolveDebugMode } from "./components/OverlayScreen";
+import { OverlayScreen } from "./components/OverlayScreen";
+import { resolveDebugMode } from "./lib/overlay-runtime";
 import {
   buildCustomizerUrl,
   decodeOverlayStyleConfig,

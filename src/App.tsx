@@ -156,6 +156,31 @@ export function App() {
     void resolveAuth();
   }, [resolveAuth]);
 
+  // Auto-refresh token before it expires (check every 10 minutes)
+  useEffect(() => {
+    if (!clientId) return;
+
+    const interval = setInterval(async () => {
+      const token = getStoredToken();
+      if (!token) return;
+
+      // Refresh when less than 30 minutes remaining
+      const msRemaining = token.expiresAt - Date.now();
+      if (msRemaining > 30 * 60 * 1000) return;
+
+      console.log("[Auth] Auto-refreshing token...");
+      const refreshed = await refreshAccessToken(clientId, token.refreshToken);
+      if (refreshed) {
+        storeToken(refreshed);
+        console.log("[Auth] Token auto-refreshed");
+      } else {
+        console.log("[Auth] Auto-refresh failed — token will expire");
+      }
+    }, 10 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [clientId]);
+
   if (customizeMode) {
     return (
       <CustomizerPage

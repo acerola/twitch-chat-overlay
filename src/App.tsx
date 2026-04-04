@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CustomizerPage } from "./components/CustomizerPage";
 import { OverlayScreen, resolveDebugMode } from "./components/OverlayScreen";
 import {
@@ -6,31 +6,37 @@ import {
   decodeOverlayStyleConfig,
 } from "./lib/overlay-customization";
 import {
-  clearOAuthState,
   clearToken,
-  clearVerifier,
-  exchangeCodeForToken,
   fetchTwitchUserId,
   fetchTwitchUserIdByLogin,
-  getStoredOAuthState,
   getStoredToken,
-  getStoredVerifier,
   isTokenExpired,
+  pollDeviceCodeToken,
   refreshAccessToken,
+  requestDeviceCode,
   storeToken,
+  type DeviceCodeResponse,
 } from "./lib/twitch-auth";
 import { resolveChannel } from "./overlay-utils";
+
+export interface DeviceCodeState {
+  userCode: string;
+  verificationUri: string;
+  expiresAt: number;
+}
 
 export function App() {
   const url = useMemo(() => new URL(window.location.href), []);
   const appBaseUrl = useMemo(() => new URL(import.meta.env.BASE_URL, window.location.origin).toString(), []);
-  const [oauthProcessing, setOauthProcessing] = useState(false);
   const [twitchAuth, setTwitchAuth] = useState<{
     accessToken: string;
     clientId: string;
     broadcasterId: string;
     userId: string;
   } | null>(null);
+  const [deviceCodeState, setDeviceCodeState] = useState<DeviceCodeState | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const pollingAbortRef = useRef<AbortController | null>(null);
 
   const customizeMode = url.searchParams.get("customize") === "1";
   const testMode = url.searchParams.get("test") === "1";
@@ -44,63 +50,69 @@ export function App() {
     [url],
   );
 
-  useEffect(() => {
-    const code = url.searchParams.get("code");
-    const state = url.searchParams.get("state");
-    if (!code || !state) return;
+  const clientId = import.meta.env.VITE_TWITCH_CLIENT_ID as string | undefined;
+  const isAuthenticated = twitchAuth !== null || (getStoredToken() !== null && !isTokenExpired(getStoredToken()!));
 
-    const storedState = getStoredOAuthState();
-    if (state !== storedState) {
-      clearVerifier();
-      clearOAuthState();
-      return;
-    }
+  // Start Device Code Flow
+  const startAuth = useCallback(async () => {
+    if (!clientId) return;
 
-    const verifier = getStoredVerifier();
-    if (!verifier) {
-      clearOAuthState();
-      return;
-    }
+    setAuthError(null);
 
-    const clientId = import.meta.env.VITE_TWITCH_CLIENT_ID;
-    if (!clientId) {
-      clearVerifier();
-      clearOAuthState();
-      return;
-    }
+    // Cancel any existing polling
+    pollingAbortRef.current?.abort();
 
-    const redirectUri = new URL(appBaseUrl);
-    redirectUri.search = "";
-    redirectUri.searchParams.set("customize", "1");
+    try {
+      const dcr: DeviceCodeResponse = await requestDeviceCode(clientId);
+      console.log("[Auth] Device code received — enter code:", dcr.user_code, "at", dcr.verification_uri);
 
-    setOauthProcessing(true);
-
-    exchangeCodeForToken({
-      clientId,
-      code,
-      redirectUri: redirectUri.toString(),
-      codeVerifier: verifier,
-    })
-      .then((token) => {
-        storeToken(token);
-        clearVerifier();
-        clearOAuthState();
-
-        const cleanUrl = new URL(window.location.href);
-        cleanUrl.searchParams.delete("code");
-        cleanUrl.searchParams.delete("state");
-        cleanUrl.searchParams.set("customize", "1");
-        window.location.replace(cleanUrl.toString());
-      })
-      .catch(() => {
-        clearVerifier();
-        clearOAuthState();
-        setOauthProcessing(false);
+      setDeviceCodeState({
+        userCode: dcr.user_code,
+        verificationUri: dcr.verification_uri,
+        expiresAt: Date.now() + dcr.expires_in * 1000,
       });
-  }, [url, appBaseUrl]);
 
+      const abort = new AbortController();
+      pollingAbortRef.current = abort;
+
+      const token = await pollDeviceCodeToken(clientId, dcr.device_code, dcr.interval, abort.signal);
+
+      storeToken(token);
+      setDeviceCodeState(null);
+      console.log("[Auth] Authenticated successfully — token stored");
+
+      // Trigger token resolution
+      resolveAuth();
+    } catch (e) {
+      setDeviceCodeState(null);
+      if (e instanceof DOMException && e.name === "AbortError") return;
+      console.error("[Auth] Failed:", e instanceof Error ? e.message : e);
+      setAuthError(e instanceof Error ? e.message : "Authentication failed");
+    }
+  }, [clientId]);
+
+  const cancelAuth = useCallback(() => {
+    pollingAbortRef.current?.abort();
+    setDeviceCodeState(null);
+    setAuthError(null);
+  }, []);
+
+  const disconnectAuth = useCallback(() => {
+    pollingAbortRef.current?.abort();
+    clearToken();
+    setTwitchAuth(null);
+    setDeviceCodeState(null);
+    setAuthError(null);
+  }, []);
+
+  // Cleanup polling on unmount
   useEffect(() => {
-    // Mock EventSub mode: skip OAuth, use dummy credentials (not in test/customize mode)
+    return () => { pollingAbortRef.current?.abort(); };
+  }, []);
+
+  // Resolve twitchAuth from stored token
+  const resolveAuth = useCallback(async () => {
+    // Mock EventSub mode
     if (import.meta.env.VITE_EVENTSUB_URL && !testMode && !customizeMode) {
       setTwitchAuth({
         accessToken: "mock",
@@ -111,48 +123,51 @@ export function App() {
       return;
     }
 
-    const clientId = import.meta.env.VITE_TWITCH_CLIENT_ID;
     if (!clientId || !overlayChannel) return;
 
-    let cancelled = false;
+    let token = getStoredToken();
+    if (!token) return;
 
-    async function resolve() {
-      let token = getStoredToken();
-      if (!token) return;
-
-      if (isTokenExpired(token)) {
-        try {
-          token = await refreshAccessToken({ clientId: clientId!, refreshToken: token.refreshToken });
-          storeToken(token);
-        } catch {
-          clearToken();
-          return;
-        }
+    if (isTokenExpired(token)) {
+      console.log("[Auth] Token expired, refreshing...");
+      const refreshed = await refreshAccessToken(clientId, token.refreshToken);
+      if (!refreshed) {
+        console.log("[Auth] Refresh failed — re-auth required");
+        clearToken();
+        return;
       }
-
-      const me = await fetchTwitchUserId(token.accessToken, clientId!);
-      if (!me || cancelled) return;
-
-      const broadcasterId = await fetchTwitchUserIdByLogin(token.accessToken, clientId!, overlayChannel!);
-      if (!broadcasterId || cancelled) return;
-
-      setTwitchAuth({ accessToken: token.accessToken, clientId: clientId!, broadcasterId, userId: me.userId });
+      storeToken(refreshed);
+      token = refreshed;
+      console.log("[Auth] Token refreshed");
     }
 
-    void resolve();
-    return () => { cancelled = true; };
-  }, [overlayChannel, testMode, customizeMode]);
+    const me = await fetchTwitchUserId(token.accessToken, clientId);
+    if (!me) return;
 
-  if (oauthProcessing) {
-    return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh" }}>
-        <p>認証処理中...</p>
-      </div>
-    );
-  }
+    const broadcasterId = await fetchTwitchUserIdByLogin(token.accessToken, clientId, overlayChannel);
+    if (!broadcasterId) return;
+
+    console.log("[Auth] Resolved — user:", me.login, "broadcaster:", overlayChannel);
+    setTwitchAuth({ accessToken: token.accessToken, clientId, broadcasterId, userId: me.userId });
+  }, [clientId, overlayChannel, testMode, customizeMode]);
+
+  useEffect(() => {
+    void resolveAuth();
+  }, [resolveAuth]);
 
   if (customizeMode) {
-    return <CustomizerPage appBaseUrl={appBaseUrl} initialConfig={styleConfig} />;
+    return (
+      <CustomizerPage
+        appBaseUrl={appBaseUrl}
+        initialConfig={styleConfig}
+        isAuthenticated={isAuthenticated}
+        deviceCodeState={deviceCodeState}
+        authError={authError}
+        onConnectTwitch={clientId ? startAuth : undefined}
+        onCancelAuth={cancelAuth}
+        onDisconnectTwitch={disconnectAuth}
+      />
+    );
   }
 
   return (
@@ -163,6 +178,9 @@ export function App() {
       testMode={testMode}
       styleConfig={styleConfig}
       twitchAuth={twitchAuth}
+      deviceCodeState={deviceCodeState}
+      onConnectTwitch={clientId ? startAuth : undefined}
+      onCancelAuth={cancelAuth}
     />
   );
 }

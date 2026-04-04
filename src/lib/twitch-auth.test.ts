@@ -1,86 +1,82 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  generateCodeVerifier,
-  generateCodeChallenge,
-  buildAuthUrl,
+  requestDeviceCode,
+  refreshAccessToken,
   storeToken,
   getStoredToken,
   clearToken,
   isTokenExpired,
-  storeVerifier,
-  getStoredVerifier,
-  clearVerifier,
-  storeOAuthState,
-  getStoredOAuthState,
-  clearOAuthState,
   type TwitchToken,
 } from "./twitch-auth";
 
 afterEach(() => {
   localStorage.clear();
-  sessionStorage.clear();
+  vi.restoreAllMocks();
 });
 
-describe("generateCodeVerifier", () => {
-  it("returns a string of length 128", () => {
-    const verifier = generateCodeVerifier();
-    expect(verifier).toHaveLength(128);
-  });
+describe("requestDeviceCode", () => {
+  it("posts to the device code endpoint with correct params", async () => {
+    const mockResponse = {
+      device_code: "dc_123",
+      expires_in: 1800,
+      interval: 5,
+      user_code: "ABCD-1234",
+      verification_uri: "https://www.twitch.tv/activate",
+    };
 
-  it("contains only URL-safe characters", () => {
-    const verifier = generateCodeVerifier();
-    expect(verifier).toMatch(/^[A-Za-z0-9_~.-]+$/);
-  });
-
-  it("produces different values on successive calls", () => {
-    const a = generateCodeVerifier();
-    const b = generateCodeVerifier();
-    expect(a).not.toBe(b);
-  });
-});
-
-describe("generateCodeChallenge", () => {
-  it("returns a base64url-encoded string without padding", async () => {
-    const challenge = await generateCodeChallenge("test_verifier_value");
-    // base64url: A-Z a-z 0-9 - _ (no +, /, or =)
-    expect(challenge).toMatch(/^[A-Za-z0-9_-]+$/);
-  });
-
-  it("produces a consistent hash for the same input", async () => {
-    const a = await generateCodeChallenge("deterministic_input");
-    const b = await generateCodeChallenge("deterministic_input");
-    expect(a).toBe(b);
-  });
-
-  it("produces different hashes for different inputs", async () => {
-    const a = await generateCodeChallenge("input_one");
-    const b = await generateCodeChallenge("input_two");
-    expect(a).not.toBe(b);
-  });
-});
-
-describe("buildAuthUrl", () => {
-  it("builds a correct Twitch OAuth URL with all required params", () => {
-    const url = buildAuthUrl({
-      clientId: "test_client_id",
-      redirectUri: "http://localhost:3000/callback",
-      codeChallenge: "test_challenge",
-      state: "random_state",
-    });
-
-    const parsed = new URL(url);
-    expect(parsed.origin + parsed.pathname).toBe(
-      "https://id.twitch.tv/oauth2/authorize",
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify(mockResponse), { status: 200 }),
     );
-    expect(parsed.searchParams.get("client_id")).toBe("test_client_id");
-    expect(parsed.searchParams.get("redirect_uri")).toBe(
-      "http://localhost:3000/callback",
+
+    const result = await requestDeviceCode("test_client_id");
+
+    expect(result).toEqual(mockResponse);
+    expect(fetch).toHaveBeenCalledOnce();
+    const [url, init] = vi.mocked(fetch).mock.calls[0]!;
+    expect(url).toBe("https://id.twitch.tv/oauth2/device");
+    expect(init?.method).toBe("POST");
+    const body = init?.body as URLSearchParams;
+    expect(body.get("client_id")).toBe("test_client_id");
+    expect(body.get("scopes")).toBe("user:read:chat");
+  });
+
+  it("throws on non-200 response", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response("bad request", { status: 400 }),
     );
-    expect(parsed.searchParams.get("response_type")).toBe("code");
-    expect(parsed.searchParams.get("scope")).toBe("user:read:chat");
-    expect(parsed.searchParams.get("code_challenge")).toBe("test_challenge");
-    expect(parsed.searchParams.get("code_challenge_method")).toBe("S256");
-    expect(parsed.searchParams.get("state")).toBe("random_state");
+
+    await expect(requestDeviceCode("bad_id")).rejects.toThrow("Device code request failed");
+  });
+});
+
+describe("refreshAccessToken", () => {
+  it("returns a new token on success", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          access_token: "new_access",
+          refresh_token: "new_refresh",
+          expires_in: 14400,
+          scope: ["user:read:chat"],
+        }),
+        { status: 200 },
+      ),
+    );
+
+    const result = await refreshAccessToken("client_id", "old_refresh");
+
+    expect(result).not.toBeNull();
+    expect(result!.accessToken).toBe("new_access");
+    expect(result!.refreshToken).toBe("new_refresh");
+  });
+
+  it("returns null on failure", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response("invalid", { status: 401 }),
+    );
+
+    const result = await refreshAccessToken("client_id", "bad_refresh");
+    expect(result).toBeNull();
   });
 });
 
@@ -119,7 +115,7 @@ describe("isTokenExpired", () => {
     const token: TwitchToken = {
       accessToken: "a",
       refreshToken: "r",
-      expiresAt: Date.now() + 3600_000, // 1 hour from now
+      expiresAt: Date.now() + 3600_000,
       scope: [],
     };
     expect(isTokenExpired(token)).toBe(false);
@@ -129,7 +125,7 @@ describe("isTokenExpired", () => {
     const token: TwitchToken = {
       accessToken: "a",
       refreshToken: "r",
-      expiresAt: Date.now() - 1000, // 1 second ago
+      expiresAt: Date.now() - 1000,
       scope: [],
     };
     expect(isTokenExpired(token)).toBe(true);
@@ -139,7 +135,7 @@ describe("isTokenExpired", () => {
     const token: TwitchToken = {
       accessToken: "a",
       refreshToken: "r",
-      expiresAt: Date.now() + 4 * 60 * 1000, // 4 minutes from now (within 5-min buffer)
+      expiresAt: Date.now() + 4 * 60 * 1000,
       scope: [],
     };
     expect(isTokenExpired(token)).toBe(true);
@@ -149,41 +145,9 @@ describe("isTokenExpired", () => {
     const token: TwitchToken = {
       accessToken: "a",
       refreshToken: "r",
-      expiresAt: Date.now() + 6 * 60 * 1000, // 6 minutes from now
+      expiresAt: Date.now() + 6 * 60 * 1000,
       scope: [],
     };
     expect(isTokenExpired(token)).toBe(false);
-  });
-});
-
-describe("PKCE state storage (sessionStorage)", () => {
-  it("stores and retrieves a verifier", () => {
-    storeVerifier("verifier_abc");
-    expect(getStoredVerifier()).toBe("verifier_abc");
-  });
-
-  it("returns null when no verifier is stored", () => {
-    expect(getStoredVerifier()).toBeNull();
-  });
-
-  it("clears the verifier", () => {
-    storeVerifier("verifier_abc");
-    clearVerifier();
-    expect(getStoredVerifier()).toBeNull();
-  });
-
-  it("stores and retrieves an OAuth state", () => {
-    storeOAuthState("state_xyz");
-    expect(getStoredOAuthState()).toBe("state_xyz");
-  });
-
-  it("returns null when no state is stored", () => {
-    expect(getStoredOAuthState()).toBeNull();
-  });
-
-  it("clears the OAuth state", () => {
-    storeOAuthState("state_xyz");
-    clearOAuthState();
-    expect(getStoredOAuthState()).toBeNull();
   });
 });

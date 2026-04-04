@@ -1,7 +1,8 @@
 const TOKEN_STORAGE_KEY = "twitch_overlay_token";
-const VERIFIER_STORAGE_KEY = "twitch_pkce_verifier";
-const STATE_STORAGE_KEY = "twitch_oauth_state";
-const EXPIRY_BUFFER_MS = 5 * 60 * 1000; // 5 minutes
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 export interface TwitchToken {
   accessToken: string;
@@ -10,117 +11,112 @@ export interface TwitchToken {
   scope: string[];
 }
 
-// ---------------------------------------------------------------------------
-// PKCE helpers
-// ---------------------------------------------------------------------------
-
-/** Returns a 128-character URL-safe random string for use as a PKCE code verifier. */
-export function generateCodeVerifier(): string {
-  const charset =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
-  const randomValues = crypto.getRandomValues(new Uint8Array(128));
-  let verifier = "";
-  for (const byte of randomValues) {
-    verifier += charset[byte % charset.length];
-  }
-  return verifier;
-}
-
-/** SHA-256 hash of the verifier, base64url-encoded (no padding). */
-export async function generateCodeChallenge(verifier: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(verifier);
-  const digest = await crypto.subtle.digest("SHA-256", data);
-  return base64UrlEncode(new Uint8Array(digest));
-}
-
-function base64UrlEncode(bytes: Uint8Array): string {
-  let binary = "";
-  for (const byte of bytes) {
-    binary += String.fromCharCode(byte);
-  }
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+export interface DeviceCodeResponse {
+  device_code: string;
+  expires_in: number;
+  interval: number;
+  user_code: string;
+  verification_uri: string;
 }
 
 // ---------------------------------------------------------------------------
-// Auth URL building
+// Device Code Grant Flow
 // ---------------------------------------------------------------------------
 
-export function buildAuthUrl(params: {
-  clientId: string;
-  redirectUri: string;
-  codeChallenge: string;
-  state: string;
-}): string {
-  const url = new URL("https://id.twitch.tv/oauth2/authorize");
-  url.searchParams.set("client_id", params.clientId);
-  url.searchParams.set("redirect_uri", params.redirectUri);
-  url.searchParams.set("response_type", "code");
-  url.searchParams.set("scope", "user:read:chat");
-  url.searchParams.set("code_challenge", params.codeChallenge);
-  url.searchParams.set("code_challenge_method", "S256");
-  url.searchParams.set("state", params.state);
-  return url.toString();
-}
-
-// ---------------------------------------------------------------------------
-// Token exchange
-// ---------------------------------------------------------------------------
-
-export async function exchangeCodeForToken(params: {
-  clientId: string;
-  code: string;
-  redirectUri: string;
-  codeVerifier: string;
-}): Promise<TwitchToken> {
+export async function requestDeviceCode(
+  clientId: string,
+): Promise<DeviceCodeResponse> {
   const body = new URLSearchParams({
-    client_id: params.clientId,
-    code: params.code,
-    grant_type: "authorization_code",
-    redirect_uri: params.redirectUri,
-    code_verifier: params.codeVerifier,
+    client_id: clientId,
+    scopes: "user:read:chat",
   });
 
-  const response = await fetch("https://id.twitch.tv/oauth2/token", {
+  const response = await fetch("https://id.twitch.tv/oauth2/device", {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body,
   });
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`Token exchange failed (${response.status}): ${text}`);
+    throw new Error(`Device code request failed (${response.status}): ${text}`);
   }
 
-  const data = await response.json();
-  return {
-    accessToken: data.access_token,
-    refreshToken: data.refresh_token,
-    expiresAt: Date.now() + data.expires_in * 1000,
-    scope: data.scope ?? [],
-  };
+  return response.json();
 }
 
-export async function refreshAccessToken(params: {
-  clientId: string;
-  refreshToken: string;
-}): Promise<TwitchToken> {
+export async function pollDeviceCodeToken(
+  clientId: string,
+  deviceCode: string,
+  interval: number,
+  signal: AbortSignal,
+): Promise<TwitchToken> {
+  let pollInterval = interval;
+
+  while (!signal.aborted) {
+    await new Promise<void>((resolve, reject) => {
+      const id = setTimeout(resolve, pollInterval * 1000);
+      signal.addEventListener("abort", () => { clearTimeout(id); reject(new DOMException("Aborted", "AbortError")); }, { once: true });
+    });
+
+    const body = new URLSearchParams({
+      client_id: clientId,
+      scopes: "user:read:chat",
+      device_code: deviceCode,
+      grant_type: "urn:ietf:params:oauth:grant-type:device_code",
+    });
+
+    const response = await fetch("https://id.twitch.tv/oauth2/token", {
+      method: "POST",
+      body,
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        expiresAt: Date.now() + data.expires_in * 1000,
+        scope: data.scope ?? [],
+      };
+    }
+
+    const errorData = await response.json().catch(() => ({ message: "" }));
+    const message = errorData.message ?? "";
+
+    if (message === "authorization_pending") {
+      continue;
+    }
+    if (message === "slow_down") {
+      pollInterval += 5;
+      continue;
+    }
+    // expired_token, access_denied, or unknown error
+    throw new Error(message || `Polling failed (${response.status})`);
+  }
+
+  throw new DOMException("Aborted", "AbortError");
+}
+
+// ---------------------------------------------------------------------------
+// Token refresh (works without client_secret for public apps)
+// ---------------------------------------------------------------------------
+
+export async function refreshAccessToken(
+  clientId: string,
+  refreshToken: string,
+): Promise<TwitchToken | null> {
   const body = new URLSearchParams({
-    client_id: params.clientId,
+    client_id: clientId,
     grant_type: "refresh_token",
-    refresh_token: params.refreshToken,
+    refresh_token: refreshToken,
   });
 
   const response = await fetch("https://id.twitch.tv/oauth2/token", {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body,
   });
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Token refresh failed (${response.status}): ${text}`);
-  }
+  if (!response.ok) return null;
 
   const data = await response.json();
   return {
@@ -132,7 +128,7 @@ export async function refreshAccessToken(params: {
 }
 
 // ---------------------------------------------------------------------------
-// Token storage (localStorage — shared across tabs on same origin)
+// Token storage (localStorage)
 // ---------------------------------------------------------------------------
 
 export function storeToken(token: TwitchToken): void {
@@ -154,35 +150,8 @@ export function clearToken(): void {
 }
 
 export function isTokenExpired(token: TwitchToken): boolean {
+  const EXPIRY_BUFFER_MS = 5 * 60 * 1000;
   return Date.now() + EXPIRY_BUFFER_MS >= token.expiresAt;
-}
-
-// ---------------------------------------------------------------------------
-// PKCE state storage (sessionStorage — per-tab, cleared on close)
-// ---------------------------------------------------------------------------
-
-export function storeVerifier(verifier: string): void {
-  sessionStorage.setItem(VERIFIER_STORAGE_KEY, verifier);
-}
-
-export function getStoredVerifier(): string | null {
-  return sessionStorage.getItem(VERIFIER_STORAGE_KEY);
-}
-
-export function clearVerifier(): void {
-  sessionStorage.removeItem(VERIFIER_STORAGE_KEY);
-}
-
-export function storeOAuthState(state: string): void {
-  sessionStorage.setItem(STATE_STORAGE_KEY, state);
-}
-
-export function getStoredOAuthState(): string | null {
-  return sessionStorage.getItem(STATE_STORAGE_KEY);
-}
-
-export function clearOAuthState(): void {
-  sessionStorage.removeItem(STATE_STORAGE_KEY);
 }
 
 // ---------------------------------------------------------------------------

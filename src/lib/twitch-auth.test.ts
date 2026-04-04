@@ -37,7 +37,7 @@ describe("requestDeviceCode", () => {
     expect(init?.method).toBe("POST");
     const body = init?.body as URLSearchParams;
     expect(body.get("client_id")).toBe("test_client_id");
-    expect(body.get("scopes")).toBe("user:read:chat");
+    expect(body.get("scopes")).toBe("user:read:chat bits:read channel:read:redemptions");
   });
 
   it("throws on non-200 response", async () => {

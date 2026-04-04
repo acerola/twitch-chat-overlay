@@ -184,6 +184,12 @@ export function parseCheerEvent(
 // WebSocket client (side-effectful)
 // ---------------------------------------------------------------------------
 
+export interface SubscriptionStatus {
+  type: string;
+  ok: boolean;
+  error?: string;
+}
+
 export interface EventSubClientOptions {
   accessToken: string;
   clientId: string;
@@ -193,6 +199,7 @@ export interface EventSubClientOptions {
   onCheer: (data: { username: string; bits: number; message: string }) => void;
   onCelebration: (data: { username: string; bits: number }) => void;
   onConnectionChange: (connected: boolean) => void;
+  onSubscriptionStatus?: (statuses: SubscriptionStatus[]) => void;
 }
 
 interface EventSubMessage {
@@ -221,7 +228,7 @@ async function subscribeToEventSub(
   condition: Record<string, string>,
   accessToken: string,
   clientId: string,
-): Promise<void> {
+): Promise<SubscriptionStatus> {
   const response = await fetch(
     "https://api.twitch.tv/helix/eventsub/subscriptions",
     {
@@ -245,10 +252,13 @@ async function subscribeToEventSub(
 
   if (!response.ok) {
     const text = await response.text();
-    console.error(
-      `EventSub subscription failed for ${subscriptionType} (${response.status}): ${text}`,
-    );
+    const msg = (() => { try { return JSON.parse(text).message; } catch { return text; } })();
+    console.error(`[EventSub] subscription failed: ${subscriptionType} (${response.status}): ${msg}`);
+    return { type: subscriptionType, ok: false, error: msg };
   }
+
+  console.log(`[EventSub] subscribed: ${subscriptionType}`);
+  return { type: subscriptionType, ok: true };
 }
 
 export function createEventSubClient(options: EventSubClientOptions): {
@@ -319,42 +329,26 @@ export function createEventSubClient(options: EventSubClientOptions): {
         // Mock mode: skip subscription calls — the mock server pushes events to all clients
         if (import.meta.env.VITE_EVENTSUB_URL) break;
 
-        // Subscribe to channel.chat.message
-        subscribeToEventSub(
-          sessionId,
-          "channel.chat.message",
-          "1",
-          {
-            broadcaster_user_id: options.broadcasterId,
-            user_id: options.userId,
-          },
-          options.accessToken,
-          options.clientId,
-        );
-
-        // Subscribe to channel.cheer
-        subscribeToEventSub(
-          sessionId,
-          "channel.cheer",
-          "1",
-          {
-            broadcaster_user_id: options.broadcasterId,
-          },
-          options.accessToken,
-          options.clientId,
-        );
-
-        // Subscribe to channel.channel_points_automatic_reward_redemption.add
-        subscribeToEventSub(
-          sessionId,
-          "channel.channel_points_automatic_reward_redemption.add",
-          "1",
-          {
-            broadcaster_user_id: options.broadcasterId,
-          },
-          options.accessToken,
-          options.clientId,
-        );
+        void (async () => {
+          const statuses = await Promise.all([
+            subscribeToEventSub(
+              sessionId, "channel.chat.message", "1",
+              { broadcaster_user_id: options.broadcasterId, user_id: options.userId },
+              options.accessToken, options.clientId,
+            ),
+            subscribeToEventSub(
+              sessionId, "channel.cheer", "1",
+              { broadcaster_user_id: options.broadcasterId },
+              options.accessToken, options.clientId,
+            ),
+            subscribeToEventSub(
+              sessionId, "channel.channel_points_automatic_reward_redemption.add", "1",
+              { broadcaster_user_id: options.broadcasterId },
+              options.accessToken, options.clientId,
+            ),
+          ]);
+          options.onSubscriptionStatus?.(statuses);
+        })();
 
         break;
       }

@@ -596,6 +596,9 @@ export function CustomizerPage({
                   ? "Twitch に接続済みです。"
                   : "Twitch に未接続です。"}
               </p>
+              <p className={helperTextClassName}>
+                ビッツ（Cheer）やチャンネルポイント交換を表示するには、チャンネル名と同じアカウント（配信者本人）で認証してください。チャットメッセージはどのユーザーでも表示されます。
+              </p>
               {deviceCodeState ? (
                 <div className="flex flex-col gap-2 rounded-lg border border-[var(--customizer-input-border)] bg-[var(--customizer-input-bg)] p-3">
                   <p className="m-0 text-sm text-[var(--customizer-text)]">

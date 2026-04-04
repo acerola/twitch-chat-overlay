@@ -28,7 +28,7 @@ export async function requestDeviceCode(
 ): Promise<DeviceCodeResponse> {
   const body = new URLSearchParams({
     client_id: clientId,
-    scopes: "user:read:chat",
+    scopes: "user:read:chat bits:read channel:read:redemptions",
   });
 
   const response = await fetch("https://id.twitch.tv/oauth2/device", {
@@ -60,7 +60,7 @@ export async function pollDeviceCodeToken(
 
     const body = new URLSearchParams({
       client_id: clientId,
-      scopes: "user:read:chat",
+      scopes: "user:read:chat bits:read channel:read:redemptions",
       device_code: deviceCode,
       grant_type: "urn:ietf:params:oauth:grant-type:device_code",
     });

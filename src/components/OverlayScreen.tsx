@@ -64,6 +64,7 @@ interface OverlayScreenProps {
     broadcasterId: string;
     userId: string;
   } | null;
+  isAuthenticated?: boolean;
   deviceCodeState?: DeviceCodeState | null;
   onConnectTwitch?: () => void;
   onCancelAuth?: () => void;
@@ -111,6 +112,7 @@ export function OverlayScreen({
   styleConfig,
   embeddedPreview = false,
   twitchAuth,
+  isAuthenticated = false,
   deviceCodeState,
   onConnectTwitch,
   onCancelAuth,
@@ -430,36 +432,36 @@ export function OverlayScreen({
         />
       ) : null}
 
-      {deviceCodeState && !embeddedPreview && !testMode ? (
-        <div className="absolute left-3 top-3 z-20 flex flex-col gap-2 rounded-[10px] border border-white/20 bg-[rgba(20,12,9,0.92)] p-3 [text-shadow:none]" data-testid="device-code-ui">
-          <p className="m-0 text-xs font-medium text-[#ffdbe6]">Twitch 認証</p>
-          <p className="m-0 text-[11px] text-[#ffe9ef]">
-            <a className="text-[#c9b0ff] underline" href={deviceCodeState.verificationUri} target="_blank" rel="noopener noreferrer">{deviceCodeState.verificationUri}</a>
-            {" "}を開いてコードを入力:
-          </p>
-          <p className="m-0 text-center text-lg font-bold tracking-widest text-white">{deviceCodeState.userCode}</p>
-          <p className="m-0 text-center text-[10px] text-white/50">認証待機中...</p>
-          {onCancelAuth ? (
-            <button className="cursor-pointer rounded-lg border border-white/20 bg-white/8 px-2 py-1 text-[10px] text-white/70 hover:bg-white/15" type="button" onClick={onCancelAuth}>キャンセル</button>
-          ) : null}
-        </div>
-      ) : onConnectTwitch && !twitchAuth && !embeddedPreview && !testMode ? (
-        <button
-          className="absolute left-3 top-3 z-20 cursor-pointer rounded-full border-2 border-white/80 bg-[rgba(100,65,165,0.9)] px-[14px] py-[7px] text-xs font-medium text-white shadow-[0_2px_8px_rgba(0,0,0,0.35)] transition-opacity hover:opacity-90 [text-shadow:none]"
-          type="button"
-          onClick={onConnectTwitch}
-          data-testid="overlay-auth-button"
-        >
-          Twitch 認証
-        </button>
-      ) : null}
-
       <div
         ref={messageStackRef}
-        className={messageStackClassName}
+        className={`${messageStackClassName} relative`}
         style={stackStyle}
         aria-live="polite"
       >
+        {deviceCodeState && !embeddedPreview && !testMode ? (
+          <div className="absolute right-2 top-2 z-20 flex w-[min(85%,260px)] flex-col gap-2 rounded-[10px] border border-white/20 bg-[rgba(20,12,9,0.95)] p-3 [text-shadow:none]" data-testid="device-code-ui">
+            <p className="m-0 text-xs font-medium text-[#ffdbe6]">Twitch 認証</p>
+            <p className="m-0 text-[11px] text-[#ffe9ef]">
+              <a className="text-[#c9b0ff] underline" href={deviceCodeState.verificationUri} target="_blank" rel="noopener noreferrer">{deviceCodeState.verificationUri}</a>
+              {" "}を開いてコードを入力:
+            </p>
+            <p className="m-0 text-center text-lg font-bold tracking-widest text-white">{deviceCodeState.userCode}</p>
+            <p className="m-0 text-center text-[10px] text-white/50">認証待機中...</p>
+            {onCancelAuth ? (
+              <button className="cursor-pointer rounded-lg border border-white/20 bg-white/8 px-2 py-1 text-[10px] text-white/70 hover:bg-white/15" type="button" onClick={onCancelAuth}>キャンセル</button>
+            ) : null}
+          </div>
+        ) : onConnectTwitch && !twitchAuth && !isAuthenticated && !embeddedPreview && !testMode ? (
+          <button
+            className="absolute right-2 top-2 z-20 cursor-pointer rounded-full border-2 border-white/95 bg-[rgba(255,169,181,0.92)] px-[14px] py-[7px] text-xs font-medium text-[#fff5f9] shadow-[0_2px_8px_rgba(0,0,0,0.35)] transition-opacity hover:opacity-90 [text-shadow:none]"
+            type="button"
+            onClick={onConnectTwitch}
+            data-testid="overlay-auth-button"
+          >
+            Twitch 認証
+          </button>
+        ) : null}
+
         {chatListItems.map((item) => {
           if (item.type === "alert") {
             return (

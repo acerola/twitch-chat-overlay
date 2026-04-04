@@ -179,6 +179,7 @@ export function App() {
       testMode={testMode}
       styleConfig={styleConfig}
       twitchAuth={twitchAuth}
+      isAuthenticated={isAuthenticated}
       deviceCodeState={deviceCodeState}
       onConnectTwitch={clientId ? startAuth : undefined}
       onCancelAuth={cancelAuth}

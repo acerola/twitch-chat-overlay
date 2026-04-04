@@ -28,6 +28,9 @@ interface DebugMenuProps {
   onAddRoleArtistMessage: () => void;
   onAddRoleTurboMessage: () => void;
   onAlertCheer: () => void;
+  onAlertCheerSmall: () => void;
+  onAlertCheerLarge: () => void;
+  onAlertCheerAnonymous: () => void;
   onAlertSub: () => void;
   onAlertResub: () => void;
   onAlertGift: () => void;
@@ -66,6 +69,9 @@ export function DebugMenu({
   onAddRoleArtistMessage,
   onAddRoleTurboMessage,
   onAlertCheer,
+  onAlertCheerSmall,
+  onAlertCheerLarge,
+  onAlertCheerAnonymous,
   onAlertSub,
   onAlertResub,
   onAlertGift,
@@ -177,7 +183,16 @@ export function DebugMenu({
             <p className="debug-section-title m-0 text-[11px] font-medium text-[#ffe9ef]">アラート検証</p>
             <div className="debug-grid grid grid-cols-2 gap-[6px]">
               <button className={DEBUG_BUTTON_CLASSNAME} type="button" onClick={onAlertCheer}>
-                ビッツ通知
+                ビッツ通知 (500)
+              </button>
+              <button className={DEBUG_BUTTON_CLASSNAME} type="button" onClick={onAlertCheerSmall}>
+                ビッツ通知 (1)
+              </button>
+              <button className={DEBUG_BUTTON_CLASSNAME} type="button" onClick={onAlertCheerLarge}>
+                ビッツ通知 (10000)
+              </button>
+              <button className={DEBUG_BUTTON_CLASSNAME} type="button" onClick={onAlertCheerAnonymous}>
+                匿名ビッツ通知
               </button>
               <button className={DEBUG_BUTTON_CLASSNAME} type="button" onClick={onAlertSub}>
                 サブ通知

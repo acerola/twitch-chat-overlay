@@ -52,7 +52,7 @@ describe("App debug menu", () => {
     expect(screen.getByText(/長いユーザー名テスト 1：/)).toBeInTheDocument();
 
     const beforeAlerts = screen.queryAllByTestId("alert-item").length;
-    fireEvent.click(screen.getByRole("button", { name: "ビッツ通知" }));
+    fireEvent.click(screen.getByRole("button", { name: "ビッツ通知 (500)" }));
     const afterAlerts = screen.queryAllByTestId("alert-item").length;
     expect(afterAlerts).toBe(beforeAlerts + 1);
 

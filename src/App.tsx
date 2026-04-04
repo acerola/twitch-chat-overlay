@@ -100,6 +100,17 @@ export function App() {
   }, [url, appBaseUrl]);
 
   useEffect(() => {
+    // Mock EventSub mode: skip OAuth, use dummy credentials (not in test/customize mode)
+    if (import.meta.env.VITE_EVENTSUB_URL && !testMode && !customizeMode) {
+      setTwitchAuth({
+        accessToken: "mock",
+        clientId: "mock",
+        broadcasterId: "0",
+        userId: "0",
+      });
+      return;
+    }
+
     const clientId = import.meta.env.VITE_TWITCH_CLIENT_ID;
     if (!clientId || !overlayChannel) return;
 
@@ -130,7 +141,7 @@ export function App() {
 
     void resolve();
     return () => { cancelled = true; };
-  }, [overlayChannel]);
+  }, [overlayChannel, testMode, customizeMode]);
 
   if (oauthProcessing) {
     return (

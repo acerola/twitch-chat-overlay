@@ -2,8 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 import {
   parseEventSubChatMessage,
   parseAutoRewardRedemption,
+  parseCheerEvent,
   type EventSubChatMessagePayload,
   type EventSubAutoRewardPayload,
+  type EventSubCheerPayload,
 } from "./twitch-eventsub";
 
 // ---------------------------------------------------------------------------
@@ -264,5 +266,78 @@ describe("parseAutoRewardRedemption", () => {
     const result = parseAutoRewardRedemption(payload);
 
     expect(result).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// parseCheerEvent
+// ---------------------------------------------------------------------------
+
+function baseCheerPayload(
+  overrides: Partial<EventSubCheerPayload> = {},
+): EventSubCheerPayload {
+  return {
+    broadcaster_user_id: "12345",
+    broadcaster_user_login: "testchannel",
+    broadcaster_user_name: "TestChannel",
+    is_anonymous: false,
+    user_id: "67890",
+    user_login: "testuser",
+    user_name: "TestUser",
+    message: "This is a test event.",
+    bits: 100,
+    ...overrides,
+  };
+}
+
+describe("parseCheerEvent", () => {
+  it("parses a standard cheer event", () => {
+    const result = parseCheerEvent(baseCheerPayload());
+
+    expect(result).toEqual({
+      username: "testuser",
+      bits: 100,
+      message: "This is a test event.",
+    });
+  });
+
+  it("returns Anonymous username for anonymous cheers", () => {
+    const result = parseCheerEvent(
+      baseCheerPayload({
+        is_anonymous: true,
+        user_id: null,
+        user_login: null,
+        user_name: null,
+      }),
+    );
+
+    expect(result.username).toBe("Anonymous");
+    expect(result.bits).toBe(100);
+  });
+
+  it("handles small bit amounts", () => {
+    const result = parseCheerEvent(baseCheerPayload({ bits: 1 }));
+
+    expect(result.bits).toBe(1);
+  });
+
+  it("handles large bit amounts", () => {
+    const result = parseCheerEvent(baseCheerPayload({ bits: 100000 }));
+
+    expect(result.bits).toBe(100000);
+  });
+
+  it("preserves the cheer message", () => {
+    const result = parseCheerEvent(
+      baseCheerPayload({ message: "Cheer500 Great stream!" }),
+    );
+
+    expect(result.message).toBe("Cheer500 Great stream!");
+  });
+
+  it("handles empty message", () => {
+    const result = parseCheerEvent(baseCheerPayload({ message: "" }));
+
+    expect(result.message).toBe("");
   });
 });

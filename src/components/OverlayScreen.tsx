@@ -120,9 +120,8 @@ export function OverlayScreen({
   );
 
   // Use EventSub data when authenticated, otherwise TMI
-  const messages = twitchAuth ? eventSubData.messages : tmiData.messages;
-  const alerts = twitchAuth ? eventSubData.alerts : tmiData.alerts;
-  const { addAlert, addDebugMessage, clearAllOverlayData, trimFeedEntries } = tmiData;
+  const activeData = twitchAuth ? eventSubData : tmiData;
+  const { messages, alerts, addAlert, addDebugMessage, clearAllOverlayData, trimFeedEntries } = activeData;
 
   const chatListItems = useMemo(() => buildFeedItems(messages, alerts), [messages, alerts]);
   const messageStackRef = useRef<HTMLDivElement | null>(null);
@@ -402,6 +401,9 @@ export function OverlayScreen({
           onAddRoleArtistMessage={() => addDebugMessage("role_artist")}
           onAddRoleTurboMessage={() => addDebugMessage("role_turbo")}
           onAlertCheer={() => addAlert("デバッグユーザーが 500 ビッツ応援", "cheer")}
+          onAlertCheerSmall={() => addAlert("debuguser cheered 1 bits!", "cheer")}
+          onAlertCheerLarge={() => addAlert("debuguser cheered 10000 bits!", "cheer")}
+          onAlertCheerAnonymous={() => addAlert("Anonymous cheered 100 bits!", "cheer")}
           onAlertSub={() => addAlert("デバッグユーザーがサブスクしました", "subscribe")}
           onAlertResub={() => addAlert("デバッグユーザーが再サブスク（12 か月）", "subscribe")}
           onAlertGift={() => addAlert("デバッグユーザーが ViewerX さんへギフトサブ", "gift")}

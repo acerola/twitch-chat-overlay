@@ -59,6 +59,18 @@ export interface EventSubAutoRewardPayload {
   };
 }
 
+export interface EventSubCheerPayload {
+  broadcaster_user_id: string;
+  broadcaster_user_login: string;
+  broadcaster_user_name: string;
+  is_anonymous: boolean;
+  user_id: string | null;
+  user_login: string | null;
+  user_name: string | null;
+  message: string;
+  bits: number;
+}
+
 // ---------------------------------------------------------------------------
 // Parse result types
 // ---------------------------------------------------------------------------
@@ -154,6 +166,20 @@ export function parseAutoRewardRedemption(
   };
 }
 
+export function parseCheerEvent(
+  payload: EventSubCheerPayload,
+): { username: string; bits: number; message: string } {
+  const username = payload.is_anonymous
+    ? "Anonymous"
+    : (payload.user_login ?? "Anonymous");
+
+  return {
+    username,
+    bits: payload.bits,
+    message: payload.message,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // WebSocket client (side-effectful)
 // ---------------------------------------------------------------------------
@@ -164,6 +190,7 @@ export interface EventSubClientOptions {
   broadcasterId: string;
   userId: string;
   onChatMessage: (event: ParsedChatEvent) => void;
+  onCheer: (data: { username: string; bits: number; message: string }) => void;
   onCelebration: (data: { username: string; bits: number }) => void;
   onConnectionChange: (connected: boolean) => void;
 }
@@ -234,14 +261,22 @@ export function createEventSubClient(options: EventSubClientOptions): {
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
   function connect() {
-    if (disposed) return;
+    if (disposed) {
+      console.debug("[EventSub] connect() skipped — disposed");
+      return;
+    }
 
-    const url = reconnectUrl ?? "wss://eventsub.wss.twitch.tv/ws";
+    const url =
+      reconnectUrl ??
+      import.meta.env.VITE_EVENTSUB_URL ??
+      "wss://eventsub.wss.twitch.tv/ws";
     reconnectUrl = null;
 
+    console.debug("[EventSub] connecting to", url);
     ws = new WebSocket(url);
 
     ws.onopen = () => {
+      console.debug("[EventSub] connected");
       options.onConnectionChange(true);
     };
 
@@ -256,7 +291,8 @@ export function createEventSubClient(options: EventSubClientOptions): {
       handleMessage(data);
     };
 
-    ws.onclose = () => {
+    ws.onclose = (e) => {
+      console.debug("[EventSub] closed — code:", e.code, "disposed:", disposed);
       options.onConnectionChange(false);
 
       if (!disposed) {
@@ -266,7 +302,8 @@ export function createEventSubClient(options: EventSubClientOptions): {
       }
     };
 
-    ws.onerror = () => {
+    ws.onerror = (e) => {
+      console.debug("[EventSub] error:", e);
       // onclose will fire after onerror, handling reconnect
     };
   }
@@ -279,6 +316,9 @@ export function createEventSubClient(options: EventSubClientOptions): {
         const sessionId = data.payload.session?.id;
         if (!sessionId) break;
 
+        // Mock mode: skip subscription calls — the mock server pushes events to all clients
+        if (import.meta.env.VITE_EVENTSUB_URL) break;
+
         // Subscribe to channel.chat.message
         subscribeToEventSub(
           sessionId,
@@ -287,6 +327,18 @@ export function createEventSubClient(options: EventSubClientOptions): {
           {
             broadcaster_user_id: options.broadcasterId,
             user_id: options.userId,
+          },
+          options.accessToken,
+          options.clientId,
+        );
+
+        // Subscribe to channel.cheer
+        subscribeToEventSub(
+          sessionId,
+          "channel.cheer",
+          "1",
+          {
+            broadcaster_user_id: options.broadcasterId,
           },
           options.accessToken,
           options.clientId,
@@ -325,6 +377,11 @@ export function createEventSubClient(options: EventSubClientOptions): {
             event as unknown as EventSubChatMessagePayload,
           );
           options.onChatMessage(parsed);
+        } else if (subType === "channel.cheer") {
+          const result = parseCheerEvent(
+            event as unknown as EventSubCheerPayload,
+          );
+          options.onCheer(result);
         } else if (
           subType ===
           "channel.channel_points_automatic_reward_redemption.add"
@@ -349,6 +406,7 @@ export function createEventSubClient(options: EventSubClientOptions): {
   }
 
   function disconnect() {
+    console.debug("[EventSub] disconnect() called");
     disposed = true;
 
     if (reconnectTimer !== null) {

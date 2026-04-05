@@ -14,7 +14,7 @@ const messageTextBaseClassName =
 
 function getEmoteClassName(emoteOnly: boolean, singleEmoteOnly: boolean, gigantified: boolean): string {
   if (gigantified) {
-    return "emote emote-gigantified mx-[2px] h-[clamp(60px,6.5vw,96px)] translate-y-0 align-text-bottom animate-[gigantified-in_500ms_cubic-bezier(0.22,0.8,0.2,1)_both]";
+    return "emote emote-gigantified mx-[2px] h-[clamp(200px,36vh,350px)] translate-y-0 align-text-bottom animate-[gigantified-in_500ms_cubic-bezier(0.22,0.8,0.2,1)_both]";
   }
 
   if (!emoteOnly) {
@@ -101,7 +101,7 @@ export function ChatMessageItem({
         <div
           className={
             emoteOnly || gigantified
-              ? `${messageTextBaseClassName} message-text-emote-only flex flex-wrap items-center gap-[5px] overflow-visible [-webkit-line-clamp:unset] [line-clamp:unset]`
+              ? `${messageTextBaseClassName} message-text-emote-only flex flex-wrap items-center gap-[5px] overflow-visible [-webkit-line-clamp:unset] [line-clamp:unset] [max-height:none]`
               : messageTextBaseClassName
           }
         >

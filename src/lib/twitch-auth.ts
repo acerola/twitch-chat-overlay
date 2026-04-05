@@ -1,5 +1,12 @@
 const TOKEN_STORAGE_KEY = "twitch_overlay_token";
 
+const REQUIRED_SCOPES = [
+  "user:read:chat",
+  "bits:read",
+  "channel:read:redemptions",
+  "channel:read:subscriptions",
+];
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -28,7 +35,7 @@ export async function requestDeviceCode(
 ): Promise<DeviceCodeResponse> {
   const body = new URLSearchParams({
     client_id: clientId,
-    scopes: "user:read:chat bits:read channel:read:redemptions",
+    scopes: REQUIRED_SCOPES.join(" "),
   });
 
   const response = await fetch("https://id.twitch.tv/oauth2/device", {
@@ -60,7 +67,7 @@ export async function pollDeviceCodeToken(
 
     const body = new URLSearchParams({
       client_id: clientId,
-      scopes: "user:read:chat bits:read channel:read:redemptions",
+      scopes: REQUIRED_SCOPES.join(" "),
       device_code: deviceCode,
       grant_type: "urn:ietf:params:oauth:grant-type:device_code",
     });
@@ -152,6 +159,10 @@ export function clearToken(): void {
 export function isTokenExpired(token: TwitchToken): boolean {
   const EXPIRY_BUFFER_MS = 5 * 60 * 1000;
   return Date.now() + EXPIRY_BUFFER_MS >= token.expiresAt;
+}
+
+export function hasRequiredScopes(token: TwitchToken): boolean {
+  return REQUIRED_SCOPES.every((s) => token.scope.includes(s));
 }
 
 // ---------------------------------------------------------------------------

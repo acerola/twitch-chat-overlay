@@ -71,6 +71,56 @@ export interface EventSubCheerPayload {
   bits: number;
 }
 
+export interface EventSubSubscribePayload {
+  user_id: string;
+  user_login: string;
+  user_name: string;
+  broadcaster_user_id: string;
+  broadcaster_user_login: string;
+  broadcaster_user_name: string;
+  tier: string;
+  is_gift: boolean;
+}
+
+export interface EventSubSubscriptionGiftPayload {
+  user_id: string | null;
+  user_login: string | null;
+  user_name: string | null;
+  broadcaster_user_id: string;
+  broadcaster_user_login: string;
+  broadcaster_user_name: string;
+  total: number;
+  tier: string;
+  cumulative_total: number | null;
+  is_anonymous: boolean;
+}
+
+export interface EventSubRaidPayload {
+  from_broadcaster_user_id: string;
+  from_broadcaster_user_login: string;
+  from_broadcaster_user_name: string;
+  to_broadcaster_user_id: string;
+  to_broadcaster_user_login: string;
+  to_broadcaster_user_name: string;
+  viewers: number;
+}
+
+export interface EventSubChannelPointRedemptionPayload {
+  broadcaster_user_id: string;
+  broadcaster_user_login: string;
+  broadcaster_user_name: string;
+  user_id: string;
+  user_login: string;
+  user_name: string;
+  user_input: string;
+  reward: {
+    id: string;
+    title: string;
+    cost: number;
+  };
+  redeemed_at: string;
+}
+
 // ---------------------------------------------------------------------------
 // Parse result types
 // ---------------------------------------------------------------------------
@@ -143,7 +193,7 @@ export function parseEventSubChatMessage(
       type: "message_with_alert",
       message,
       alert: {
-        text: `${payload.chatter_user_name} cheered ${payload.cheer.bits} bits!`,
+        text: `${payload.chatter_user_name} が ${payload.cheer.bits} ビッツ応援`,
         kind: "cheer",
       },
     };
@@ -170,13 +220,56 @@ export function parseCheerEvent(
   payload: EventSubCheerPayload,
 ): { username: string; bits: number; message: string } {
   const username = payload.is_anonymous
-    ? "Anonymous"
-    : (payload.user_login ?? "Anonymous");
+    ? "匿名"
+    : (payload.user_login ?? "匿名");
 
   return {
     username,
     bits: payload.bits,
     message: payload.message,
+  };
+}
+
+export function parseSubscribeEvent(
+  payload: EventSubSubscribePayload,
+): { username: string; tier: string; isGift: boolean } {
+  return {
+    username: payload.user_name,
+    tier: payload.tier,
+    isGift: payload.is_gift,
+  };
+}
+
+export function parseSubscriptionGiftEvent(
+  payload: EventSubSubscriptionGiftPayload,
+): { username: string; total: number; tier: string } {
+  const username = payload.is_anonymous
+    ? "匿名"
+    : (payload.user_name ?? "匿名");
+
+  return {
+    username,
+    total: payload.total,
+    tier: payload.tier,
+  };
+}
+
+export function parseRaidEvent(
+  payload: EventSubRaidPayload,
+): { username: string; viewers: number } {
+  return {
+    username: payload.from_broadcaster_user_name,
+    viewers: payload.viewers,
+  };
+}
+
+export function parseChannelPointRedemption(
+  payload: EventSubChannelPointRedemptionPayload,
+): { username: string; rewardTitle: string; userInput: string | null } {
+  return {
+    username: payload.user_name,
+    rewardTitle: payload.reward.title,
+    userInput: payload.user_input || null,
   };
 }
 
@@ -198,6 +291,10 @@ export interface EventSubClientOptions {
   onChatMessage: (event: ParsedChatEvent) => void;
   onCheer: (data: { username: string; bits: number; message: string }) => void;
   onCelebration: (data: { username: string; bits: number }) => void;
+  onSubscribe: (data: { username: string; tier: string; isGift: boolean }) => void;
+  onSubscriptionGift: (data: { username: string; total: number; tier: string }) => void;
+  onRaid: (data: { username: string; viewers: number }) => void;
+  onChannelPointRedemption: (data: { username: string; rewardTitle: string; userInput: string | null }) => void;
   onConnectionChange: (connected: boolean) => void;
   onSubscriptionStatus?: (statuses: SubscriptionStatus[]) => void;
 }
@@ -346,6 +443,26 @@ export function createEventSubClient(options: EventSubClientOptions): {
               { broadcaster_user_id: options.broadcasterId },
               options.accessToken, options.clientId,
             ),
+            subscribeToEventSub(
+              sessionId, "channel.subscribe", "1",
+              { broadcaster_user_id: options.broadcasterId },
+              options.accessToken, options.clientId,
+            ),
+            subscribeToEventSub(
+              sessionId, "channel.subscription.gift", "1",
+              { broadcaster_user_id: options.broadcasterId },
+              options.accessToken, options.clientId,
+            ),
+            subscribeToEventSub(
+              sessionId, "channel.raid", "1",
+              { to_broadcaster_user_id: options.broadcasterId },
+              options.accessToken, options.clientId,
+            ),
+            subscribeToEventSub(
+              sessionId, "channel.channel_points_custom_reward_redemption.add", "1",
+              { broadcaster_user_id: options.broadcasterId },
+              options.accessToken, options.clientId,
+            ),
           ]);
           options.onSubscriptionStatus?.(statuses);
         })();
@@ -389,6 +506,26 @@ export function createEventSubClient(options: EventSubClientOptions): {
               bits: result.bits,
             });
           }
+        } else if (subType === "channel.subscribe") {
+          const result = parseSubscribeEvent(
+            event as unknown as EventSubSubscribePayload,
+          );
+          options.onSubscribe(result);
+        } else if (subType === "channel.subscription.gift") {
+          const result = parseSubscriptionGiftEvent(
+            event as unknown as EventSubSubscriptionGiftPayload,
+          );
+          options.onSubscriptionGift(result);
+        } else if (subType === "channel.raid") {
+          const result = parseRaidEvent(
+            event as unknown as EventSubRaidPayload,
+          );
+          options.onRaid(result);
+        } else if (subType === "channel.channel_points_custom_reward_redemption.add") {
+          const result = parseChannelPointRedemption(
+            event as unknown as EventSubChannelPointRedemptionPayload,
+          );
+          options.onChannelPointRedemption(result);
         }
         break;
       }

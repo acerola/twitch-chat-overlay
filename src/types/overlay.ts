@@ -15,7 +15,7 @@ export type BadgeKind =
 
 export type PowerUpKind = "gigantified_emote" | "message_effect";
 
-export type AlertKind = "cheer" | "subscribe" | "gift" | "raid" | "celebration" | "default";
+export type AlertKind = "cheer" | "subscribe" | "gift" | "raid" | "celebration" | "redemption" | "default";
 
 export interface ChatMessage {
   id: string;

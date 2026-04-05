@@ -44,6 +44,14 @@ export function AlertKindIcon({ kind, className, preset = "blossom" }: AlertKind
     );
   }
 
+  if (kind === "redemption") {
+    return (
+      <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 2.5L4.5 12 12 21.5 19.5 12z" />
+      </svg>
+    );
+  }
+
   if (kind === "celebration") {
     return (
       <svg className={className} viewBox="0 0 24 24" aria-hidden="true">

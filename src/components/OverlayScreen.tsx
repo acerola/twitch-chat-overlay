@@ -410,9 +410,9 @@ export function OverlayScreen({
           onAddRoleArtistMessage={() => addDebugMessage("role_artist")}
           onAddRoleTurboMessage={() => addDebugMessage("role_turbo")}
           onAlertCheer={() => addAlert("デバッグユーザーが 500 ビッツ応援", "cheer")}
-          onAlertCheerSmall={() => addAlert("debuguser cheered 1 bits!", "cheer")}
-          onAlertCheerLarge={() => addAlert("debuguser cheered 10000 bits!", "cheer")}
-          onAlertCheerAnonymous={() => addAlert("Anonymous cheered 100 bits!", "cheer")}
+          onAlertCheerSmall={() => addAlert("debuguser が 1 ビッツ応援", "cheer")}
+          onAlertCheerLarge={() => addAlert("debuguser が 10000 ビッツ応援", "cheer")}
+          onAlertCheerAnonymous={() => addAlert("匿名 が 100 ビッツ応援", "cheer")}
           onAlertSub={() => addAlert("デバッグユーザーがサブスクしました", "subscribe")}
           onAlertResub={() => addAlert("デバッグユーザーが再サブスク（12 か月）", "subscribe")}
           onAlertGift={() => addAlert("デバッグユーザーが ViewerX さんへギフトサブ", "gift")}

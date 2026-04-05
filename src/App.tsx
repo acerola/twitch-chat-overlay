@@ -11,6 +11,7 @@ import {
   fetchTwitchUserId,
   fetchTwitchUserIdByLogin,
   getStoredToken,
+  hasRequiredScopes,
   isTokenExpired,
   pollDeviceCodeToken,
   refreshAccessToken,
@@ -52,7 +53,8 @@ export function App() {
   );
 
   const clientId = import.meta.env.VITE_TWITCH_CLIENT_ID as string | undefined;
-  const isAuthenticated = twitchAuth !== null || (getStoredToken() !== null && !isTokenExpired(getStoredToken()!));
+  const storedToken = getStoredToken();
+  const isAuthenticated = twitchAuth !== null || (storedToken !== null && !isTokenExpired(storedToken) && hasRequiredScopes(storedToken));
 
   // Start Device Code Flow
   const startAuth = useCallback(async () => {
@@ -140,6 +142,12 @@ export function App() {
       storeToken(refreshed);
       token = refreshed;
       console.log("[Auth] Token refreshed");
+    }
+
+    if (!hasRequiredScopes(token)) {
+      console.log("[Auth] Token missing required scopes — re-auth required");
+      clearToken();
+      return;
     }
 
     const me = await fetchTwitchUserId(token.accessToken, clientId);

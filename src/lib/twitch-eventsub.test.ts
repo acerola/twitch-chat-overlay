@@ -3,9 +3,17 @@ import {
   parseEventSubChatMessage,
   parseAutoRewardRedemption,
   parseCheerEvent,
+  parseSubscribeEvent,
+  parseSubscriptionGiftEvent,
+  parseRaidEvent,
+  parseChannelPointRedemption,
   type EventSubChatMessagePayload,
   type EventSubAutoRewardPayload,
   type EventSubCheerPayload,
+  type EventSubSubscribePayload,
+  type EventSubSubscriptionGiftPayload,
+  type EventSubRaidPayload,
+  type EventSubChannelPointRedemptionPayload,
 } from "./twitch-eventsub";
 
 // ---------------------------------------------------------------------------
@@ -311,7 +319,7 @@ describe("parseCheerEvent", () => {
       }),
     );
 
-    expect(result.username).toBe("Anonymous");
+    expect(result.username).toBe("匿名");
     expect(result.bits).toBe(100);
   });
 
@@ -339,5 +347,197 @@ describe("parseCheerEvent", () => {
     const result = parseCheerEvent(baseCheerPayload({ message: "" }));
 
     expect(result.message).toBe("");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// parseSubscribeEvent
+// ---------------------------------------------------------------------------
+
+function baseSubscribePayload(
+  overrides: Partial<EventSubSubscribePayload> = {},
+): EventSubSubscribePayload {
+  return {
+    user_id: "67890",
+    user_login: "testuser",
+    user_name: "TestUser",
+    broadcaster_user_id: "12345",
+    broadcaster_user_login: "testchannel",
+    broadcaster_user_name: "TestChannel",
+    tier: "1000",
+    is_gift: false,
+    ...overrides,
+  };
+}
+
+describe("parseSubscribeEvent", () => {
+  it("parses a standard subscribe event", () => {
+    const result = parseSubscribeEvent(baseSubscribePayload());
+
+    expect(result).toEqual({
+      username: "TestUser",
+      tier: "1000",
+      isGift: false,
+    });
+  });
+
+  it("identifies gift subscriptions", () => {
+    const result = parseSubscribeEvent(baseSubscribePayload({ is_gift: true }));
+
+    expect(result.isGift).toBe(true);
+  });
+
+  it("handles tier 2 and tier 3 subs", () => {
+    expect(parseSubscribeEvent(baseSubscribePayload({ tier: "2000" })).tier).toBe("2000");
+    expect(parseSubscribeEvent(baseSubscribePayload({ tier: "3000" })).tier).toBe("3000");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// parseSubscriptionGiftEvent
+// ---------------------------------------------------------------------------
+
+function baseGiftPayload(
+  overrides: Partial<EventSubSubscriptionGiftPayload> = {},
+): EventSubSubscriptionGiftPayload {
+  return {
+    user_id: "67890",
+    user_login: "testuser",
+    user_name: "TestUser",
+    broadcaster_user_id: "12345",
+    broadcaster_user_login: "testchannel",
+    broadcaster_user_name: "TestChannel",
+    total: 5,
+    tier: "1000",
+    cumulative_total: 20,
+    is_anonymous: false,
+    ...overrides,
+  };
+}
+
+describe("parseSubscriptionGiftEvent", () => {
+  it("parses a standard gift event", () => {
+    const result = parseSubscriptionGiftEvent(baseGiftPayload());
+
+    expect(result).toEqual({
+      username: "TestUser",
+      total: 5,
+      tier: "1000",
+    });
+  });
+
+  it("returns 匿名 for anonymous gifts", () => {
+    const result = parseSubscriptionGiftEvent(
+      baseGiftPayload({
+        is_anonymous: true,
+        user_id: null,
+        user_login: null,
+        user_name: null,
+      }),
+    );
+
+    expect(result.username).toBe("匿名");
+    expect(result.total).toBe(5);
+  });
+
+  it("handles single gift sub", () => {
+    const result = parseSubscriptionGiftEvent(baseGiftPayload({ total: 1 }));
+
+    expect(result.total).toBe(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// parseRaidEvent
+// ---------------------------------------------------------------------------
+
+function baseRaidPayload(
+  overrides: Partial<EventSubRaidPayload> = {},
+): EventSubRaidPayload {
+  return {
+    from_broadcaster_user_id: "11111",
+    from_broadcaster_user_login: "raider",
+    from_broadcaster_user_name: "Raider",
+    to_broadcaster_user_id: "12345",
+    to_broadcaster_user_login: "testchannel",
+    to_broadcaster_user_name: "TestChannel",
+    viewers: 150,
+    ...overrides,
+  };
+}
+
+describe("parseRaidEvent", () => {
+  it("parses a standard raid event", () => {
+    const result = parseRaidEvent(baseRaidPayload());
+
+    expect(result).toEqual({
+      username: "Raider",
+      viewers: 150,
+    });
+  });
+
+  it("handles small raids", () => {
+    const result = parseRaidEvent(baseRaidPayload({ viewers: 1 }));
+
+    expect(result.viewers).toBe(1);
+  });
+
+  it("handles large raids", () => {
+    const result = parseRaidEvent(baseRaidPayload({ viewers: 50000 }));
+
+    expect(result.viewers).toBe(50000);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// parseChannelPointRedemption
+// ---------------------------------------------------------------------------
+
+function baseRedemptionPayload(
+  overrides: Partial<EventSubChannelPointRedemptionPayload> = {},
+): EventSubChannelPointRedemptionPayload {
+  return {
+    broadcaster_user_id: "12345",
+    broadcaster_user_login: "testchannel",
+    broadcaster_user_name: "TestChannel",
+    user_id: "67890",
+    user_login: "testuser",
+    user_name: "TestUser",
+    user_input: "",
+    reward: {
+      id: "reward-001",
+      title: "Hydrate!",
+      cost: 500,
+    },
+    redeemed_at: "2026-04-06T00:00:00Z",
+    ...overrides,
+  };
+}
+
+describe("parseChannelPointRedemption", () => {
+  it("parses a standard redemption", () => {
+    const result = parseChannelPointRedemption(baseRedemptionPayload());
+
+    expect(result).toEqual({
+      username: "TestUser",
+      rewardTitle: "Hydrate!",
+      userInput: null,
+    });
+  });
+
+  it("includes user input when provided", () => {
+    const result = parseChannelPointRedemption(
+      baseRedemptionPayload({ user_input: "Play this song please!" }),
+    );
+
+    expect(result.userInput).toBe("Play this song please!");
+  });
+
+  it("returns null userInput for empty string", () => {
+    const result = parseChannelPointRedemption(
+      baseRedemptionPayload({ user_input: "" }),
+    );
+
+    expect(result.userInput).toBeNull();
   });
 });

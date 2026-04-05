@@ -151,7 +151,7 @@ export function useEventSubData({
       },
       onCheer: (data) => {
         addAlert(
-          `${data.username} cheered ${data.bits} bits!`,
+          `${data.username} が ${data.bits} ビッツ応援`,
           "cheer",
         );
       },
@@ -159,6 +159,32 @@ export function useEventSubData({
         addAlert(
           `${data.username} さんが ${data.bits} ビッツでセレブレーション`,
           "celebration",
+        );
+      },
+      onSubscribe: (data) => {
+        if (!data.isGift) {
+          addAlert(
+            `${data.username} がサブスクしました`,
+            "subscribe",
+          );
+        }
+      },
+      onSubscriptionGift: (data) => {
+        addAlert(
+          `${data.username} が ${data.total} 件のギフトサブを贈りました`,
+          "gift",
+        );
+      },
+      onRaid: (data) => {
+        addAlert(
+          `${data.username} が ${data.viewers} 人でレイド`,
+          "raid",
+        );
+      },
+      onChannelPointRedemption: (data) => {
+        addAlert(
+          `${data.username} が「${data.rewardTitle}」を使用`,
+          "redemption",
         );
       },
       onConnectionChange: setConnected,

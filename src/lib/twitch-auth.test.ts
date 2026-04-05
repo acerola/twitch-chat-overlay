@@ -6,6 +6,7 @@ import {
   getStoredToken,
   clearToken,
   isTokenExpired,
+  hasRequiredScopes,
   type TwitchToken,
 } from "./twitch-auth";
 
@@ -37,7 +38,7 @@ describe("requestDeviceCode", () => {
     expect(init?.method).toBe("POST");
     const body = init?.body as URLSearchParams;
     expect(body.get("client_id")).toBe("test_client_id");
-    expect(body.get("scopes")).toBe("user:read:chat bits:read channel:read:redemptions");
+    expect(body.get("scopes")).toBe("user:read:chat bits:read channel:read:redemptions channel:read:subscriptions");
   });
 
   it("throws on non-200 response", async () => {
@@ -149,5 +150,45 @@ describe("isTokenExpired", () => {
       scope: [],
     };
     expect(isTokenExpired(token)).toBe(false);
+  });
+});
+
+describe("hasRequiredScopes", () => {
+  const makeToken = (scope: string[]): TwitchToken => ({
+    accessToken: "a",
+    refreshToken: "r",
+    expiresAt: Date.now() + 3600_000,
+    scope,
+  });
+
+  it("returns true when all required scopes are present", () => {
+    expect(hasRequiredScopes(makeToken([
+      "user:read:chat",
+      "bits:read",
+      "channel:read:redemptions",
+      "channel:read:subscriptions",
+    ]))).toBe(true);
+  });
+
+  it("returns true when token has extra scopes beyond required", () => {
+    expect(hasRequiredScopes(makeToken([
+      "user:read:chat",
+      "bits:read",
+      "channel:read:redemptions",
+      "channel:read:subscriptions",
+      "moderator:read:chatters",
+    ]))).toBe(true);
+  });
+
+  it("returns false when channel:read:subscriptions is missing", () => {
+    expect(hasRequiredScopes(makeToken([
+      "user:read:chat",
+      "bits:read",
+      "channel:read:redemptions",
+    ]))).toBe(false);
+  });
+
+  it("returns false for empty scopes", () => {
+    expect(hasRequiredScopes(makeToken([]))).toBe(false);
   });
 });

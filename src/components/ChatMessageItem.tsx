@@ -12,14 +12,18 @@ const sideDotClassName = `${sideMarkerClassName} rounded-full bg-[var(--side-dot
 const messageTextBaseClassName =
   "message-text overflow-hidden text-[clamp(17px,1.55vw,22px)] leading-[1.28] font-medium tracking-[0.002em] text-[var(--message-color)] [overflow-wrap:anywhere] [display:-webkit-box] [-webkit-line-clamp:3] [line-clamp:3] [-webkit-box-orient:vertical] [max-height:calc(1.28em*3)] text-ellipsis";
 
-function getEmoteClassName(emoteOnly: boolean, singleEmoteOnly: boolean): string {
+function getEmoteClassName(emoteOnly: boolean, singleEmoteOnly: boolean, gigantified: boolean): string {
+  if (gigantified) {
+    return "emote emote-gigantified mx-[2px] h-[clamp(60px,6.5vw,96px)] translate-y-0 align-text-bottom animate-[gigantified-in_500ms_cubic-bezier(0.22,0.8,0.2,1)_both]";
+  }
+
   if (!emoteOnly) {
     return "emote mx-[2px] h-[clamp(24px,2.1vw,30px)] translate-y-[2px] align-text-bottom";
   }
 
   return singleEmoteOnly
-    ? "emote emote-single mx-[2px] h-[clamp(62px,6.2vw,92px)] translate-y-0 align-text-bottom"
-    : "emote emote-multi mx-[2px] h-[clamp(36px,3.5vw,52px)] translate-y-0 align-text-bottom";
+    ? "emote emote-single mx-[2px] h-[clamp(52px,5.4vw,78px)] translate-y-0 align-text-bottom"
+    : "emote emote-multi mx-[2px] h-[clamp(34px,3.2vw,48px)] translate-y-0 align-text-bottom";
 }
 
 export function ChatMessageItem({
@@ -34,6 +38,7 @@ export function ChatMessageItem({
   const emoteOnly = isEmoteOnlyMessage(parts);
   const emoteCount = parts.reduce((count, part) => (part.type === "emote" ? count + 1 : count), 0);
   const singleEmoteOnly = emoteOnly && emoteCount === 1;
+  const gigantified = message.powerUp === "gigantified_emote";
 
   return (
     <div
@@ -95,7 +100,7 @@ export function ChatMessageItem({
 
         <div
           className={
-            emoteOnly
+            emoteOnly || gigantified
               ? `${messageTextBaseClassName} message-text-emote-only flex flex-wrap items-center gap-[5px] overflow-visible [-webkit-line-clamp:unset] [line-clamp:unset]`
               : messageTextBaseClassName
           }
@@ -113,7 +118,7 @@ export function ChatMessageItem({
                 key={`${message.id}-emote-${part.emoteId}-${index}`}
                 src={`https://static-cdn.jtvnw.net/emoticons/v2/${part.emoteId}/default/dark/3.0`}
                 alt={part.alt}
-                className={getEmoteClassName(emoteOnly, singleEmoteOnly)}
+                className={getEmoteClassName(emoteOnly, singleEmoteOnly, gigantified)}
                 loading="lazy"
               />
             );

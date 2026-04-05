@@ -14,7 +14,7 @@ const messageTextBaseClassName =
 
 function getEmoteClassName(emoteOnly: boolean, singleEmoteOnly: boolean, gigantified: boolean): string {
   if (gigantified) {
-    return "emote emote-gigantified mx-[2px] h-[clamp(200px,36vh,350px)] translate-y-0 align-text-bottom animate-[gigantified-in_500ms_cubic-bezier(0.22,0.8,0.2,1)_both]";
+    return "emote emote-gigantified mx-[2px] h-[clamp(140px,28vh,260px)] translate-y-0 align-text-bottom animate-[gigantified-in_500ms_cubic-bezier(0.22,0.8,0.2,1)_both]";
   }
 
   if (!emoteOnly) {

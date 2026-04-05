@@ -48,7 +48,7 @@ describe("parseEventSubChatMessage", () => {
     expect(result.type).toBe("message");
     if (result.type !== "message") throw new Error("unreachable");
 
-    expect(result.message.username).toBe("testuser");
+    expect(result.message.username).toBe("TestUser");
     expect(result.message.text).toBe("Hello world");
     expect(result.message.color).toBe("#FF5500");
     expect(result.message.badges).toEqual({ subscriber: "12" });
@@ -110,7 +110,7 @@ describe("parseEventSubChatMessage", () => {
 
     expect(result.message.text).toBe("Cheer500 Great stream!");
     expect(result.alert.kind).toBe("cheer");
-    expect(result.alert.text).toContain("testuser");
+    expect(result.alert.text).toContain("TestUser");
     expect(result.alert.text).toContain("500");
   });
 

@@ -129,7 +129,7 @@ export function parseEventSubChatMessage(
 
   const message: ChatMessage = {
     id: createOverlayId(),
-    username: payload.chatter_user_login,
+    username: payload.chatter_user_name,
     text: payload.message.text,
     color: payload.color,
     badges: badgesArrayToRecord(payload.badges),
@@ -143,7 +143,7 @@ export function parseEventSubChatMessage(
       type: "message_with_alert",
       message,
       alert: {
-        text: `${payload.chatter_user_login} cheered ${payload.cheer.bits} bits!`,
+        text: `${payload.chatter_user_name} cheered ${payload.cheer.bits} bits!`,
         kind: "cheer",
       },
     };
